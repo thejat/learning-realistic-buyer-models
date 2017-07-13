@@ -9,7 +9,7 @@ class PreferenceBuyer(object):
 
 class UtilityBuyer(object):
 
-	def __init__(self,no_of_item=3,bit_length=20):
+	def __init__(self,no_of_item=3,bit_length=10):
 		self.no_of_item = no_of_item
 		self.bit_length = bit_length
 		self.eps = 1e-4
@@ -20,11 +20,17 @@ class UtilityBuyer(object):
 		return self.utility_coeffs_linear
 
 	def set_valuation_vector(self):
-		self.utility_coeffs_linear = np.random.randint(2**self.bit_length,size=self.no_of_item)*1.0/(2**self.bit_length)
+		self.utility_coeffs_linear = np.zeros(self.no_of_item)
+		for k in range(self.no_of_item):
+			while self.utility_coeffs_linear[k]==0:
+				self.utility_coeffs_linear[k] = np.random.randint(2**self.bit_length)*1.0/(2**self.bit_length)
 		self.utility_coeffs_linear = self.utility_coeffs_linear/np.sum(self.utility_coeffs_linear)
 
 	def get_bit_length(self):
 		return self.bit_length
+
+	def get_no_of_item(self):
+		return self.no_of_item
 
 	def get_budget(self):
 		return self.budget
@@ -55,9 +61,32 @@ class UtilityBuyer(object):
 		# print "\t Obj =", pulp.value(lp_prob.objective)
 		return t
 
+
+	def get_constrained_bundle_non_lp(self,price_vec):
+		bang_per_buck = list(self.utility_coeffs_linear/price_vec)
+
+		item_ids_decreasing = [i[0] for i in sorted(enumerate(bang_per_buck), key=lambda x:x[1],reverse=True)] 
+
+		# print bang_per_buck
+		# print item_ids_decreasing
+
+		bundle = np.zeros(self.no_of_item)
+		left_over_budget = self.get_budget()
+		for item_id in item_ids_decreasing:
+			if left_over_budget - price_vec[item_id] > 0:
+				left_over_budget = left_over_budget - price_vec[item_id]
+				bundle[item_id] = 1.0
+			else:
+				bundle[item_id] = left_over_budget*1.0/price_vec[item_id]
+				break
+
+		return bundle
+
+
 	def get_bundle_given_budget(self,price_vec,budget):
 		self.set_budget(budget)
-		bundle = self.get_constrained_bundle(price_vec)
+		# bundle = self.get_constrained_bundle(price_vec)
+		bundle = self.get_constrained_bundle_non_lp(price_vec)
 		return bundle
 
 
@@ -66,9 +95,15 @@ if __name__=='__main__':
 	
 	no_of_item = 5
 	b = UtilityBuyer(no_of_item=no_of_item)
-	price_vec = np.random.rand(no_of_item)
-	print price_vec
+	# price_vec = np.random.rand(no_of_item)
+	# print price_vec
+	# print b.get_valuation_vector(),b.get_budget()
+	# print b.get_constrained_bundle(price_vec)
 
-	print b.get_valuation_vector(),b.get_budget()
-	print b.get_constrained_bundle(price_vec)
-	print b.get_bundle_given_budget(price_vec,b.get_budget())
+
+	#debugging
+	price_vec = np.array([0.9,1.02399951e3,1.12589991e15,1.12589991e15,1.12589991e15])
+	print price_vec
+	x = b.get_bundle_given_budget(price_vec,1)
+	print x
+	print np.dot(price_vec,np.array(x))
