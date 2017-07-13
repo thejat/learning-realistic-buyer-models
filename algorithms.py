@@ -55,14 +55,14 @@ def s_balcan(buyer):
 	return a
 
 def s_util_constrained(buyer,realistic=None):
-	return 
+	
+	def get_p_ij_bar()
 
 def s_binary_search():
 	return NotImplementedError
 
 def s_util_unconstrained():
 	return NotImplementedError
-
 
 if __name__=='__main__':
 	from buyers import UtilityBuyer
