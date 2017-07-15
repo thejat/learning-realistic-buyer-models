@@ -1,5 +1,12 @@
 import numpy as np
+import geometric
+np.random.seed(2018)
 
+def s_pref_list():
+	return NotImplementedError
+
+def s_util_unconstrained():
+	return NotImplementedError
 
 def s_balcan(buyer):
 
@@ -54,20 +61,130 @@ def s_balcan(buyer):
 
 	return a
 
-def s_util_constrained(buyer,realistic=None):
+def s_util_constrained(buyer,realistic=None,initial_radius=1.0/2):
+	'''
+	items are zero indexed: 0,1,...,no_of_item-1
+	'''
+
+	no_of_item = buyer.get_no_of_item()
+	budget = buyer.get_budget() #ideally should be learned as well, see paper.	
+	bit_length = buyer.get_bit_length()
+
+	Elist = []
+	Elist.append(geometric.Ellipsoid(ctr=buyer.get_valuation_vector(),shape_mat=initial_radius*np.eye(no_of_item)))
+	Hlist = [None]
+
+	for iter_idx in range(1,100):
+
+		#debgging
+		print iter_idx,'uncertianty shape vol: ',Elist[iter_idx-1].get_volume() ,'eigs:',Elist[iter_idx-1].get_eigenvals(), ' a^* belongs:', Elist[iter_idx-1].get_membership(buyer.get_valuation_vector())
+
+		
+		p_ij_best,p_bar_best,ij_best = get_best_price_from_candidate_prices(no_of_item,budget,bit_length,Elist[iter_idx-1])
+		x = buyer.get_bundle(p_ij_best)
+
+		Hlist.append(get_hyperplane_given_bundle_and_price(x,p_bar_best,ij_best,Elist[iter_idx-1].get_center()))
+
+		temp_ellipsoid = geometric.get_min_vol_ellipsoid(Elist[iter_idx-1],Hlist[iter_idx])
+		if temp_ellipsoid.get_membership(buyer.get_valuation_vector()) is False:
+			break
+
+		Elist.append(temp_ellipsoid)
+
+	# H0 = SpecialHalfspace(pvec=pvec,cvec=cvec,direction='leq')
+	# E1 = get_min_vol_ellipsoid(E0,H0)
+	# print np.prod(np.linalg.eig(E0.shape_mat)[0]),np.prod(np.linalg.eig(E1.shape_mat)[0])
+	# H1 = SpecialHalfspace(pvec=np.random.rand(4),cvec=E1.get_center(),direction='geq')
+	# E2 = get_min_vol_ellipsoid(E1,H1)
+	# print np.prod(np.linalg.eig(E1.shape_mat)[0]),np.prod(np.linalg.eig(E2.shape_mat)[0])
+
+	return Elist[-1]
+
 	
-	def get_p_ij_bar()
 
-def s_binary_search():
-	return NotImplementedError
+def get_hyperplane_given_bundle_and_price(x,p_bar_best,ij_best,c):
+	'''
+	We know only i,j should be sensitized
+	'''
 
-def s_util_unconstrained():
-	return NotImplementedError
+	print "pTc", np.dot(p_bar_best,c)
+	tolerance = 1e-5
+	assert abs(np.dot(p_bar_best,c)) <= tolerance
+
+
+	if (x[ij_best[0]] > 0 and x[ij_best[1]] == 0) or (x[ij_best[0]] == 1 and x[ij_best[1]] < 1):
+		#then a1^*/p1 \geq a2^*/p2 or np.dot(p_bar_best,a^*) geq 0
+		H = geometric.SpecialHalfspace(pvec=p_bar_best,cvec=c,direction='geq')
+	else:
+		# a1/p1 \leq a2/p2 or np.dot(p_bar_best,a^*) leq 0
+		H = geometric.SpecialHalfspace(pvec=p_bar_best,cvec=c,direction='leq')
+
+	return H
+
+def get_best_price_from_candidate_prices(no_of_item,budget,bit_length,ellipsoid):
+
+	c = ellipsoid.get_center()
+
+	ij_best = (0,1)
+	quad_val_best = 0
+	p_bar_best = np.zeros(no_of_item)
+	p_candidate_dict = {}
+	for i in range(no_of_item):
+		for j in range(no_of_item):
+			if i==j:
+				continue
+
+			p_candidate_dict[(i,j)] = budget*(2**bit_length)*np.ones(no_of_item)
+			p_candidate_dict[(i,j)][i] = budget
+			p_candidate_dict[(i,j)][j] = budget*c[j]*1.0/c[i]
+
+			p_bar_ij = np.zeros(no_of_item)
+			p_bar_ij[i] = p_candidate_dict[(i,j)][j]
+			p_bar_ij[j] = -p_candidate_dict[(i,j)][i]
+			p_bar_ij = p_bar_ij*1.0/np.linalg.norm(p_bar_ij,2)
+
+			quad_val_ij = np.dot(p_bar_ij,np.dot(ellipsoid.shape_mat,p_bar_ij))
+
+			##debugging
+			# print i,j,': ',quad_val_ij
+			
+			if  quad_val_ij > quad_val_best:
+				quad_val_best = quad_val_ij
+				ij_best = (i,j)
+				p_bar_best = p_bar_ij
+	print ij_best
+
+	return [p_candidate_dict[ij_best],p_bar_best,ij_best]
+
+
 
 if __name__=='__main__':
 	from buyers import UtilityBuyer
 	np.random.seed(2018)
-	no_of_item = 5
+	no_of_item = 3
 	buyer = UtilityBuyer(no_of_item=no_of_item)
-	a_estimated = s_balcan(buyer)
-	print '\n',a_estimated,buyer.get_valuation_vector()
+
+	# a_estimated = s_balcan(buyer)
+	# print '\n',a_estimated,buyer.get_valuation_vector()
+
+	##debugging
+	final_set0 = s_util_constrained(buyer,realistic=None,initial_radius=1.0/2)
+	simplex = geometric.Hyperplane(normal=np.ones(no_of_item),rhs=1)
+	final_set = geometric.get_ellipsoid_intersect_hyperplane(final_set0,simplex)
+	print 'final set center',final_set.get_center(),'sum',np.sum(final_set.get_center())
+	print 'final set eigs',np.linalg.eig(final_set.get_shape_mat())[0]
+	print 'ground truth:',buyer.get_valuation_vector()
+
+	##debugging
+	# no_of_item = buyer.get_no_of_item()
+	# budget = buyer.get_budget()
+	# bit_length = buyer.get_bit_length()
+	# Elist = []
+	# Elist.append(geometric.Ellipsoid(ctr=buyer.get_valuation_vector(),shape_mat=1.0/2*np.eye(no_of_item)))
+	# p_ij_best,p_bar_best,ij_best = get_best_price_from_candidate_prices(no_of_item,budget,bit_length,Elist[0])
+	# x = buyer.get_bundle(p_ij_best)
+	# Hlist = [None]
+	# iter_idx = 1
+	# Hlist.append(get_hyperplane_given_bundle_and_price(x,p_bar_best,ij_best,Elist[iter_idx-1].get_center()))
+	# Elist.append(geometric.get_min_vol_ellipsoid(Elist[iter_idx-1],Hlist[iter_idx]))
+	# p_ij_best1,p_bar_best1,ij_best1 = get_best_price_from_candidate_prices(no_of_item,budget,bit_length,Elist[1])

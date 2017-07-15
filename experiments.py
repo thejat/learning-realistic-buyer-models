@@ -2,7 +2,7 @@ import numpy as np
 import time, pickle, datetime, copy, collections
 from buyer_models import UtilityBuyer, PreferenceBuyer
 from data import get_bpp_price_ranges, get_synthetic_price_ranges
-from algorithms import s_binary_search,s_util_unconstrained, s_util_constrained, s_balcan
+from algorithms import s_pref_list_util_unconstrained, s_util_constrained, s_balcan
 
 
 

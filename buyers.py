@@ -85,9 +85,12 @@ class UtilityBuyer(object):
 
 	def get_bundle_given_budget(self,price_vec,budget):
 		self.set_budget(budget)
-		# bundle = self.get_constrained_bundle(price_vec)
-		bundle = self.get_constrained_bundle_non_lp(price_vec)
+		bundle = self.get_bundle(price_vec)
 		return bundle
+
+	def get_bundle(self,price_vec):
+		# return self.get_constrained_bundle(price_vec)
+		return self.get_constrained_bundle_non_lp(price_vec)
 
 
 if __name__=='__main__':
