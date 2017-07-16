@@ -73,14 +73,17 @@ def s_util_constrained(buyer,realistic=None,initial_radius=1.0/2):
 	Elist = []
 	Elist.append(geometric.Ellipsoid(ctr=buyer.get_valuation_vector(),shape_mat=initial_radius*np.eye(no_of_item)))
 	Hlist = [None]
+	simplex = geometric.Hyperplane(normal=np.ones(no_of_item)*1.0/np.sqrt(no_of_item),rhs=1.0/np.sqrt(no_of_item))
+
 
 	for iter_idx in range(1,100):
 
 		#debgging
 		print iter_idx,'uncertianty shape vol: ',Elist[iter_idx-1].get_volume() ,'eigs:',Elist[iter_idx-1].get_eigenvals(), ' a^* belongs:', Elist[iter_idx-1].get_membership(buyer.get_valuation_vector())
 
-		
-		p_ij_best,p_bar_best,ij_best = get_best_price_from_candidate_prices(no_of_item,budget,bit_length,Elist[iter_idx-1])
+		cylinder_current = geometric.get_ellipsoid_intersect_hyperplane(Elist[iter_idx-1],simplex)
+
+		p_ij_best,p_bar_best,ij_best = get_best_price_from_candidate_prices(no_of_item,budget,bit_length,Elist[iter_idx-1],cylinder_current)
 		x = buyer.get_bundle(p_ij_best)
 
 		Hlist.append(get_hyperplane_given_bundle_and_price(x,p_bar_best,ij_best,Elist[iter_idx-1].get_center()))
@@ -119,7 +122,7 @@ def get_hyperplane_given_bundle_and_price(x,p_bar_best,ij_best,c):
 
 	return H
 
-def get_best_price_from_candidate_prices(no_of_item,budget,bit_length,ellipsoid):
+def get_best_price_from_candidate_prices(no_of_item,budget,bit_length,ellipsoid,objective):
 
 	c = ellipsoid.get_center()
 
@@ -141,7 +144,7 @@ def get_best_price_from_candidate_prices(no_of_item,budget,bit_length,ellipsoid)
 			p_bar_ij[j] = -p_candidate_dict[(i,j)][i]
 			p_bar_ij = p_bar_ij*1.0/np.linalg.norm(p_bar_ij,2)
 
-			quad_val_ij = np.dot(p_bar_ij,np.dot(ellipsoid.shape_mat,p_bar_ij))
+			quad_val_ij = np.dot(p_bar_ij,np.dot(objective.shape_mat,p_bar_ij))
 
 			##debugging
 			# print i,j,': ',quad_val_ij
