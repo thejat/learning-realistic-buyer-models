@@ -207,6 +207,95 @@ def get_ellipsoid_intersect_hyperplane(ellipsoid,hyperplane):
 
 
 
+##############
+# from __future__ import division
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
+
+
+def plotEllipsoid(center, radii, rotation, ax=None, plotAxes=False, cageColor='b', cageAlpha=0.2):
+        """Plot an ellipsoid"""
+        make_ax = ax == None
+        if make_ax:
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            
+        u = np.linspace(0.0, 2.0 * np.pi, 100)
+        v = np.linspace(0.0, np.pi, 100)
+        
+        # cartesian coordinates that correspond to the spherical angles:
+        x = radii[0] * np.outer(np.cos(u), np.sin(v))
+        y = radii[1] * np.outer(np.sin(u), np.sin(v))
+        z = radii[2] * np.outer(np.ones_like(u), np.cos(v))
+        # rotate accordingly
+        for i in range(len(x)):
+            for j in range(len(x)):
+                [x[i,j],y[i,j],z[i,j]] = np.dot([x[i,j],y[i,j],z[i,j]], rotation) + center
+    
+        if plotAxes:
+            # make some purdy axes
+            axes = np.array([[radii[0],0.0,0.0],
+                             [0.0,radii[1],0.0],
+                             [0.0,0.0,radii[2]]])
+            # rotate accordingly
+            for i in range(len(axes)):
+                axes[i] = np.dot(axes[i], rotation)
+    
+    
+            # plot axes
+            for p in axes:
+                X3 = np.linspace(-p[0], p[0], 100) + center[0]
+                Y3 = np.linspace(-p[1], p[1], 100) + center[1]
+                Z3 = np.linspace(-p[2], p[2], 100) + center[2]
+                ax.plot(X3, Y3, Z3, color=cageColor)
+    
+        # plot ellipsoid
+        ax.plot_wireframe(x, y, z,  rstride=4, cstride=4, color=cageColor, alpha=cageAlpha)
+        
+        if make_ax:
+            plt.show()
+            plt.close(fig)
+            del fig
+
+
+
+def plot(P, center, radii, rotation, a_star, nc):
+	d=0
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111, projection='3d')
+
+	# label axes
+	ax.set_xlabel('x')
+	ax.set_ylabel('y')
+	ax.set_zlabel('z')
+
+	ax.scatter(P[:,0], P[:,1], P[:,2], color='g', marker='*', s=100)
+	ax.scatter(a_star[0], a_star[1], a_star[2], color = 'k', marker='o', s=100)
+	ax.scatter(center[0],center[1],center[2], color = 'r', marker='*', s=100)
+	plotEllipsoid(center, radii, rotation, ax=ax, plotAxes=True)
+	if nc[2]!=0:
+		xx, yy = np.meshgrid(range(2), range(2))
+		z = (-nc[0] * xx - nc[1] * yy - d) * 1. /nc[2]
+		ax.plot_surface(xx, yy, z, color='r')
+	elif nc[1]!=0:
+		xx, zz = np.meshgrid(range(2), range(2))
+		y = (-nc[0] * xx - nc[2] * zz - d) * 1. /nc[1]
+		ax.plot_surface(xx, y, zz, color='r')
+	elif nc[0]!=0:    
+		yy, zz = np.meshgrid(range(2), range(2))
+		x = (-nc[2] * zz - nc[1] * yy - d) * 1. /nc[0]
+		ax.plot_surface(x, yy, zz, color='r')
+	else:
+		print "No hyperplane"
+
+
+	plt.show()
+	plt.close(fig)
+	del fig
+
+
+
 if __name__=='__main__':
 	np.random.seed(2018)
 	np.set_printoptions(precision=4)
@@ -251,8 +340,8 @@ if __name__=='__main__':
 	# hyperplane = Hyperplane(normal=np.ones(dim),rhs=1)
 	# output_ellipsoid = get_ellipsoid_intersect_hyperplane(ellipsoid,hyperplane)
 
-	dim = 3
+	dim = 4
 	ellipsoid = Ellipsoid(ctr=np.zeros(dim),shape_mat=np.eye(dim))
-	hyperplane = Hyperplane(normal=np.ones(dim),rhs=1)
+	hyperplane = Hyperplane(normal=np.ones(dim)*1.0/np.sqrt(dim),rhs=1.0/np.sqrt(dim))
 	output_ellipsoid = get_ellipsoid_intersect_hyperplane(ellipsoid,hyperplane)
-	#np.ones(dim)*1.0/dim
+	print output_ellipsoid.get_center()

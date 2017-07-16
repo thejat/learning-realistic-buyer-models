@@ -100,8 +100,6 @@ def s_util_constrained(buyer,realistic=None,initial_radius=1.0/2):
 
 	return Elist[-1]
 
-	
-
 def get_hyperplane_given_bundle_and_price(x,p_bar_best,ij_best,c):
 	'''
 	We know only i,j should be sensitized
@@ -169,10 +167,11 @@ if __name__=='__main__':
 
 	##debugging
 	final_set0 = s_util_constrained(buyer,realistic=None,initial_radius=1.0/2)
-	simplex = geometric.Hyperplane(normal=np.ones(no_of_item),rhs=1)
+	print 'final set 0 center',final_set0.get_center(),'sum',np.sum(final_set0.get_center()), 'final set 0 eigs',final_set0.get_eigenvals()
+	simplex = geometric.Hyperplane(normal=np.ones(no_of_item)*1.0/np.sqrt(no_of_item),rhs=1.0/np.sqrt(no_of_item))
 	final_set = geometric.get_ellipsoid_intersect_hyperplane(final_set0,simplex)
 	print 'final set center',final_set.get_center(),'sum',np.sum(final_set.get_center())
-	print 'final set eigs',np.linalg.eig(final_set.get_shape_mat())[0]
+	print 'final set eigs',final_set.get_eigenvals()
 	print 'ground truth:',buyer.get_valuation_vector()
 
 	##debugging
