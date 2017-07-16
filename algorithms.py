@@ -71,28 +71,37 @@ def s_util_constrained(buyer,realistic=None,initial_radius=1.0/2):
 	bit_length = buyer.get_bit_length()
 
 	Elist = []
-	Elist.append(geometric.Ellipsoid(ctr=buyer.get_valuation_vector(),shape_mat=initial_radius*np.eye(no_of_item)))
+	Elist.append(geometric.Ellipsoid(ctr=buyer.get_valuation_vector()+0.5*initial_radius,shape_mat=initial_radius*np.eye(no_of_item)))
 	Hlist = [None]
 	simplex = geometric.Hyperplane(normal=np.ones(no_of_item)*1.0/np.sqrt(no_of_item),rhs=1.0/np.sqrt(no_of_item))
+	# geometric.plot_ellipsoid(Elist[0],hyperplane=simplex,custom_point=buyer.get_valuation_vector())
 
 
-	for iter_idx in range(1,100):
+	for iter_idx in range(1,10):
 
 		#debgging
-		print iter_idx,'uncertianty shape vol: ',Elist[iter_idx-1].get_volume() ,'eigs:',Elist[iter_idx-1].get_eigenvals(), ' a^* belongs:', Elist[iter_idx-1].get_membership(buyer.get_valuation_vector())
+		print 'iter:',iter_idx,', vol: ',np.around(Elist[iter_idx-1].get_volume(),3) ,',eigs:',np.around(Elist[iter_idx-1].get_eigenvals(),3),',ctr:',np.around(Elist[iter_idx-1].get_center(),3),', a^* belongs:', Elist[iter_idx-1].get_membership(buyer.get_valuation_vector())
 
-		cylinder_current = geometric.get_ellipsoid_intersect_hyperplane(Elist[iter_idx-1],simplex)
+		# cylinder_current = geometric.get_ellipsoid_intersect_hyperplane(Elist[iter_idx-1],simplex)
 
-		p_ij_best,p_bar_best,ij_best = get_best_price_from_candidate_prices(no_of_item,budget,bit_length,Elist[iter_idx-1],cylinder_current)
+		p_ij_best,p_bar_best,ij_best = get_best_price_from_candidate_prices(no_of_item,budget,bit_length,Elist[iter_idx-1],Elist[iter_idx-1])#,cylinder_current)
 		x = buyer.get_bundle(p_ij_best)
 
 		Hlist.append(get_hyperplane_given_bundle_and_price(x,p_bar_best,ij_best,Elist[iter_idx-1].get_center()))
+		print '\t halfspace normal:',Hlist[-1].get_normal(),', rhs:',Hlist[-1].get_rhs()
 
 		temp_ellipsoid = geometric.get_min_vol_ellipsoid(Elist[iter_idx-1],Hlist[iter_idx])
 		if temp_ellipsoid.get_membership(buyer.get_valuation_vector()) is False:
 			break
 
 		Elist.append(temp_ellipsoid)
+
+		#debugging
+		# geometric.plot_ellipsoid(Elist[-2],custom_point=buyer.get_valuation_vector())
+		geometric.plot_debug(Elist[-2:],hyperplane=Hlist[-1],custom_point=buyer.get_valuation_vector())
+		# geometric.plot_ellipsoid(Elist[-2],hyperplane=simplex,custom_point=buyer.get_valuation_vector())
+
+		
 
 	# H0 = SpecialHalfspace(pvec=pvec,cvec=cvec,direction='leq')
 	# E1 = get_min_vol_ellipsoid(E0,H0)
@@ -108,7 +117,7 @@ def get_hyperplane_given_bundle_and_price(x,p_bar_best,ij_best,c):
 	We know only i,j should be sensitized
 	'''
 
-	print "pTc", np.dot(p_bar_best,c)
+	# print "pTc", np.dot(p_bar_best,c)
 	tolerance = 1e-5
 	assert abs(np.dot(p_bar_best,c)) <= tolerance
 
@@ -153,7 +162,7 @@ def get_best_price_from_candidate_prices(no_of_item,budget,bit_length,ellipsoid,
 				quad_val_best = quad_val_ij
 				ij_best = (i,j)
 				p_bar_best = p_bar_ij
-	print ij_best
+	# print ij_best
 
 	return [p_candidate_dict[ij_best],p_bar_best,ij_best]
 
