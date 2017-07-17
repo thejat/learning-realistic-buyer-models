@@ -71,13 +71,11 @@ def s_util_constrained(buyer,realistic=None,initial_radius=1.0/2):
 	bit_length = buyer.get_bit_length()
 
 	Elist = []
-	Elist.append(geometric.Ellipsoid(ctr=buyer.get_valuation_vector()+0.5*initial_radius,shape_mat=initial_radius*np.eye(no_of_item)))
+	Elist.append(geometric.Ellipsoid(ctr=buyer.get_valuation_vector()+np.array([0.1,-0.05,0.15]),shape_mat=initial_radius*np.eye(no_of_item)))
 	Hlist = [None]
 	simplex = geometric.Hyperplane(normal=np.ones(no_of_item)*1.0/np.sqrt(no_of_item),rhs=1.0/np.sqrt(no_of_item))
-	# geometric.plot_ellipsoid(Elist[0],hyperplane=simplex,custom_point=buyer.get_valuation_vector())
 
-
-	for iter_idx in range(1,10):
+	for iter_idx in range(1,7):
 
 		#debgging
 		print 'iter:',iter_idx,', vol: ',np.around(Elist[iter_idx-1].get_volume(),3) ,',eigs:',np.around(Elist[iter_idx-1].get_eigenvals(),3),',ctr:',np.around(Elist[iter_idx-1].get_center(),3),', a^* belongs:', Elist[iter_idx-1].get_membership(buyer.get_valuation_vector())
@@ -86,6 +84,12 @@ def s_util_constrained(buyer,realistic=None,initial_radius=1.0/2):
 
 		p_ij_best,p_bar_best,ij_best = get_best_price_from_candidate_prices(no_of_item,budget,bit_length,Elist[iter_idx-1],Elist[iter_idx-1])#,cylinder_current)
 		x = buyer.get_bundle(p_ij_best)
+
+		##debugging
+		print "\t bundle bought:",x
+		print "\t pTa*", np.dot(p_bar_best,buyer.get_valuation_vector())
+		print "\t pTc", np.dot(p_bar_best,Elist[iter_idx-1].get_center())
+
 
 		Hlist.append(get_hyperplane_given_bundle_and_price(x,p_bar_best,ij_best,Elist[iter_idx-1].get_center()))
 		print '\t halfspace normal:',Hlist[-1].get_normal(),', rhs:',Hlist[-1].get_rhs()
@@ -97,9 +101,7 @@ def s_util_constrained(buyer,realistic=None,initial_radius=1.0/2):
 		Elist.append(temp_ellipsoid)
 
 		#debugging
-		# geometric.plot_ellipsoid(Elist[-2],custom_point=buyer.get_valuation_vector())
-		geometric.plot_debug(Elist[-2:],hyperplane=Hlist[-1],custom_point=buyer.get_valuation_vector())
-		# geometric.plot_ellipsoid(Elist[-2],hyperplane=simplex,custom_point=buyer.get_valuation_vector())
+		geometric.plot_debug(Elist[-2:],hyperplane=Hlist[-1],halfspace=Hlist[-1],custom_point=buyer.get_valuation_vector())
 
 		
 

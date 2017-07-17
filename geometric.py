@@ -231,9 +231,9 @@ def plot_debug(ellipsoids,hyperplane=None,halfspace=None,custom_point=None):
 
 		# Plot:
 		ax.plot_surface(x + ctr[0], y + ctr[1], z + ctr[2],  rstride=4, cstride=4, color=clr[ti],alpha=0.2)
-		ax.scatter(ctr[0],ctr[1],ctr[2],color=clr[ti])
-		ctr = np.around(ctr,3) 
- 		ax.text(ctr[0],ctr[1],ctr[2],  '%s,%s,%s' % (str(ctr[0]),str(ctr[1]),str(ctr[2])), size=20, zorder=1, color='k')
+		ax.scatter(ctr[0],ctr[1],ctr[2],color=clr[ti],s=30)
+		# ctr = np.around(ctr,3) 
+ 		# ax.text(ctr[0],ctr[1],ctr[2],  '%s,%s,%s' % (str(ctr[0]),str(ctr[1]),str(ctr[2])), size=20, zorder=1, color='k')
 
 		# Adjustment of the axes, so that they all have the same span:
 		max_radius = max(max_radius,np.max(abs(np.array([rx, ry, rz])) + abs(ctr)))
@@ -256,16 +256,15 @@ def plot_debug(ellipsoids,hyperplane=None,halfspace=None,custom_point=None):
 			for j in hy:
 				for k in hz:
 					if (hc[0]*i + hc[1]*j + hc[2]*k <= halfspace.get_rhs()):
-						ax.scatter(i,j,k,color='g',marker='.',alpha=0.1)
+						ax.scatter(i,j,k,color='g',marker='.',alpha=0.5,s=20)
 
 	if custom_point is not None:
 		ctr = np.around(custom_point,3)
-		ax.scatter(ctr[0],ctr[1],ctr[2],color='b',marker='*') 
-		ax.text(ctr[0],ctr[1],ctr[2],  'true: %s,%s,%s' % (str(ctr[0]),str(ctr[1]),str(ctr[2])), size=20, zorder=1,  
-	color='k')
+		ax.scatter(ctr[0],ctr[1],ctr[2],color='b',marker='*',s=30) 
+		# ax.text(ctr[0],ctr[1],ctr[2],  'true: %s,%s,%s' % (str(ctr[0]),str(ctr[1]),str(ctr[2])), size=20, zorder=1, color='k')
 
 	for axis in 'xyz':
-	    getattr(ax, 'set_{}lim'.format(axis))((-max_radius, max_radius))
+	    getattr(ax, 'set_{}lim'.format(axis))((0, max_radius))
 
 	plt.show()
 
