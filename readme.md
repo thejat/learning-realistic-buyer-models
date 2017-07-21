@@ -6,6 +6,7 @@ This codebase is for algorithms proposed in the aforementioned [paper](http://ar
   * data.py : generates data (e.g., from the billion prices project)
   * experiments.py : (calls algorithms on buyer models)
   * buyers.py : has the four buyer models
+  * geometric.py : has definitions for primitives such as ellipsoids and halfspaces that are used in the algorithms.
 
 The easiest way to get started is to look at experiments.py and go from there.
 
