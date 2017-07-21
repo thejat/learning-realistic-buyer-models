@@ -1,17 +1,28 @@
 import numpy as np
-import geometric
+import geometric, buyers
 np.random.seed(2018)
 
-def s_pref_list():
-	return NotImplementedError
+def s_pref_list(buyer,debug=False):
+
+	types,probabilities = buyer.get_buyer_dist()
+
+	if debug:
+		for e,t in enumerate(types):
+			print t, probabilities[e]
+		
+		print '\tA sample type: ', buyer.sample_a_list()
+
+	#TBD
+
+	return 0
 
 def s_util_unconstrained():
 	return NotImplementedError
 
-def s_balcan(buyer):
+def s_balcan(buyer,debug=False):
 
 	#0 indexing instead of 1 indexing as seen in Algo 2 (pg 14) of Balcan et al. WINE 2014
-	def compute_aj_by_a0(buyer, j, no_of_item, bit_length, upper_bdd_H, quantity_q=1, extra_amt_xej=0):
+	def compute_aj_by_a0(buyer, j, no_of_item, bit_length, upper_bdd_H, quantity_q=1, extra_amt_xej=0,debug=False):
 		lower_bdd_L = 0
 		p = np.zeros(no_of_item)
 		p[0] = 1
@@ -25,9 +36,10 @@ def s_balcan(buyer):
 			p[j] = 0.5*(lower_bdd_L+upper_bdd_H)
 			B = extra_amt_xej*p[j] + min(p[0],p[j])*1.0/quantity_q
 			x = buyer.get_bundle_given_budget(p,B)
-			print 'j=',j,'B=',B,'p[j]=',p[j]
-			print '\tp',p,'x=',x
-			print '\tlower_bdd_L=',lower_bdd_L,'upper_bdd_H=',upper_bdd_H
+			if debug:
+				print 'j=',j,'B=',B,'p[j]=',p[j]
+				print '\tp',p,'x=',x
+				print '\tlower_bdd_L=',lower_bdd_L,'upper_bdd_H=',upper_bdd_H
 			if x[j]>0 and x[0] > 0:
 				return p[j]
 			if x[j]>0:
@@ -61,7 +73,7 @@ def s_balcan(buyer):
 
 	return a
 
-def s_util_constrained(buyer,realistic=None,initial_radius=1.0/2):
+def s_util_constrained(buyer,realistic=None,initial_radius=1.0/2,debug=False):
 	'''
 	items are zero indexed: 0,1,...,no_of_item-1
 	'''
@@ -77,8 +89,9 @@ def s_util_constrained(buyer,realistic=None,initial_radius=1.0/2):
 
 	for iter_idx in range(1,7):
 
-		#debgging
-		print 'iter:',iter_idx,', vol: ',np.around(Elist[iter_idx-1].get_volume(),3) ,',eigs:',np.around(Elist[iter_idx-1].get_eigenvals(),3),',ctr:',np.around(Elist[iter_idx-1].get_center(),3),', a^* belongs:', Elist[iter_idx-1].get_membership(buyer.get_valuation_vector())
+		#debugging
+		if debug:
+			print 'iter:',iter_idx,', vol: ',np.around(Elist[iter_idx-1].get_volume(),3) ,',eigs:',np.around(Elist[iter_idx-1].get_eigenvals(),3),',ctr:',np.around(Elist[iter_idx-1].get_center(),3),', a^* belongs:', Elist[iter_idx-1].get_membership(buyer.get_valuation_vector())
 
 		# cylinder_current = geometric.get_ellipsoid_intersect_hyperplane(Elist[iter_idx-1],simplex)
 
@@ -86,13 +99,15 @@ def s_util_constrained(buyer,realistic=None,initial_radius=1.0/2):
 		x = buyer.get_bundle(p_ij_best)
 
 		##debugging
-		print "\t bundle bought:",x
-		print "\t pTa*", np.dot(p_bar_best,buyer.get_valuation_vector())
-		print "\t pTc", np.dot(p_bar_best,Elist[iter_idx-1].get_center())
+		if debug:
+			print "\t bundle bought:",x
+			print "\t pTa*", np.dot(p_bar_best,buyer.get_valuation_vector())
+			print "\t pTc", np.dot(p_bar_best,Elist[iter_idx-1].get_center())
 
 
 		Hlist.append(get_hyperplane_given_bundle_and_price(x,p_bar_best,ij_best,Elist[iter_idx-1].get_center()))
-		print '\t halfspace normal:',Hlist[-1].get_normal(),', rhs:',Hlist[-1].get_rhs()
+		if debug:
+			print '\t halfspace normal:',Hlist[-1].get_normal(),', rhs:',Hlist[-1].get_rhs()
 
 		temp_ellipsoid = geometric.get_min_vol_ellipsoid(Elist[iter_idx-1],Hlist[iter_idx])
 		if temp_ellipsoid.get_membership(buyer.get_valuation_vector()) is False:
@@ -101,7 +116,8 @@ def s_util_constrained(buyer,realistic=None,initial_radius=1.0/2):
 		Elist.append(temp_ellipsoid)
 
 		#debugging
-		geometric.plot_debug(Elist[-2:],hyperplane=Hlist[-1],halfspace=Hlist[-1],custom_point=buyer.get_valuation_vector())
+		if debug:
+			geometric.plot_debug(Elist[-2:],hyperplane=Hlist[-1],halfspace=Hlist[-1],custom_point=buyer.get_valuation_vector())
 
 		
 
@@ -171,24 +187,37 @@ def get_best_price_from_candidate_prices(no_of_item,budget,bit_length,ellipsoid,
 
 
 if __name__=='__main__':
-	from buyers import UtilityBuyer
 	np.random.seed(2018)
-	no_of_item = 3
-	buyer = UtilityBuyer(no_of_item=no_of_item)
 
-	# a_estimated = s_balcan(buyer)
-	# print '\n',a_estimated,buyer.get_valuation_vector()
 
-	##debugging
-	final_set0 = s_util_constrained(buyer,realistic=None,initial_radius=1.0/2)
-	print 'final set 0 center',final_set0.get_center(),'sum',np.sum(final_set0.get_center()), 'final set 0 eigs',final_set0.get_eigenvals()
-	simplex = geometric.Hyperplane(normal=np.ones(no_of_item)*1.0/np.sqrt(no_of_item),rhs=1.0/np.sqrt(no_of_item))
-	final_set = geometric.get_ellipsoid_intersect_hyperplane(final_set0,simplex)
-	print 'final set center',final_set.get_center(),'sum',np.sum(final_set.get_center())
-	print 'final set eigs',final_set.get_eigenvals()
-	print 'ground truth:',buyer.get_valuation_vector()
 
-	##debugging
+	##debugging s_pref_list
+	no_of_item = 10
+	buyer = buyers.PreferenceBuyer(no_of_item=no_of_item)
+	a_estimated_pref_list = s_pref_list(buyer,debug=True)
+	print 'Estimated: ',a_estimated_pref_list,' Truth: ',buyer.get_valuation_vector()
+
+
+	##debugging s_balcan
+	# no_of_item = 3
+	# buyer = buyers.UtilityBuyer(no_of_item=no_of_item)
+	# a_estimated_balcan = s_balcan(buyer)
+	# print '\n',a_estimated_balcan,buyer.get_valuation_vector()
+
+	##debugging s_util_constrained 1
+	# no_of_item = 3
+	# buyer = buyers.UtilityBuyer(no_of_item=no_of_item)
+	# final_set0 = s_util_constrained(buyer,realistic=None,initial_radius=1.0/2)
+	# print 'final set 0 center',final_set0.get_center(),'sum',np.sum(final_set0.get_center()), 'final set 0 eigs',final_set0.get_eigenvals()
+	# simplex = geometric.Hyperplane(normal=np.ones(no_of_item)*1.0/np.sqrt(no_of_item),rhs=1.0/np.sqrt(no_of_item))
+	# final_set = geometric.get_ellipsoid_intersect_hyperplane(final_set0,simplex)
+	# print 'final set center',final_set.get_center(),'sum',np.sum(final_set.get_center())
+	# print 'final set eigs',final_set.get_eigenvals()
+	# print 'ground truth:',buyer.get_valuation_vector()
+
+	##debugging s_util_constrained 2
+	# no_of_item = 3
+	# buyer = buyers.UtilityBuyer(no_of_item=no_of_item)
 	# no_of_item = buyer.get_no_of_item()
 	# budget = buyer.get_budget()
 	# bit_length = buyer.get_bit_length()

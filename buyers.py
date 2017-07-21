@@ -38,7 +38,7 @@ class PreferenceBuyer(Buyer):
 			for e in range(1,self.no_of_item+1):
 				self.no_of_types *= e
 		else:
-			self.no_of_types = no_of_item**3 #hardcoded cubic
+			self.no_of_types = self.no_of_item**3 #hardcoded cubic
 
 		self.types = []
 		for e in range(self.no_of_types):
@@ -48,7 +48,8 @@ class PreferenceBuyer(Buyer):
 		self.probabilities = np.random.dirichlet(np.random.randint(1,20,self.no_of_types),1)[0] #hardcoded numbers
 
 	def sample_a_list(self):
-		type_index = np.random.choice(range(self.no_of_types), 1, p=self.probabilities)
+		type_index = np.random.choice(range(self.no_of_types), p=self.probabilities)
+		# print type_index
 		return self.types[type_index]
 
 	def get_buyer_dist(self):
