@@ -22,7 +22,6 @@ class Buyer(object):
 				self.utility_coeffs_linear[k] = np.random.randint(2**self.bit_length)*1.0/(2**self.bit_length)
 		self.utility_coeffs_linear = self.utility_coeffs_linear/np.sum(self.utility_coeffs_linear)
 
-
 class PreferenceBuyer(Buyer):
 
 	def __init__(self,no_of_item=3,bit_length=5):
