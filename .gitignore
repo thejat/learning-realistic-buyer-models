@@ -2,3 +2,5 @@
 output
 temp
 .DS_Store
+.project
+.pydevproject
