@@ -5,7 +5,7 @@ import buyers, algorithms, data, geometric
 
 
 def illustrate_learning_constrained_buyer(params):
-	#Local2
+	#Local
 	no_of_item = params['no_of_item']
 
 	#Model
