@@ -10,7 +10,7 @@ def s_pref_list(buyer,debug=False):
 		for e,t in enumerate(types):
 			print t, probabilities[e]
 		
-		print '\tA sample type: ', buyer.sample_a_list()
+		print '\tA somple type: ', buyer.sample_a_list()
 
 	#TBD
 
