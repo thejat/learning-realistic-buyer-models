@@ -23,7 +23,7 @@ def s_pref_list(buyer, delta = 0.0001, debug=False): # delta is the learning acc
 	print 'initial range of valuations:', list_of_valuation_range
 #  		print 'price:', price_vec, 'pref-list:', pref_list, 'item bought:', item_bought
 
-	for _ in range(1):
+	for _ in range(0):
 		# Step 1: buyer arrives
 		# Step 2: set prices and stocks
 		price_vec = set_prices(L, no_of_item, list_of_valuation_range)
