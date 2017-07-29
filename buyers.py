@@ -54,6 +54,23 @@ class PreferenceBuyer(Buyer):
 
 	def get_buyer_dist(self):
 		return (self.types,self.probabilities)
+	
+	def buy_an_item(self, price_vec, stock_vec):
+		pref_list = self.sample_a_list()
+		item_bought, pref_list = float("inf"), pref_list
+		size_of_list = len(pref_list)
+		valuation_vector = self.utility_coeffs_linear
+		for item in pref_list:
+			if stock_vec[item] >= 1:
+				#print 'price:', price_vec[item], 'valuation:', valuation_vector[item] 
+				if (price_vec[item] <= valuation_vector[item]):
+					item_bought = item
+					break
+		return item_bought, pref_list 
+	
+	def get_no_of_types(self):
+		return self.no_of_types
+		
 
 class UtilityBuyer(Buyer):
 
@@ -95,6 +112,8 @@ class UtilityBuyer(Buyer):
 			t.append(v.varValue)
 		# print "\t Obj =", pulp.value(lp_prob.objective)
 		return t
+	
+	
 
 
 	def get_constrained_bundle_non_lp(self,price_vec):
