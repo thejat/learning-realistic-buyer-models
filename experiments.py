@@ -1,4 +1,3 @@
-import random
 import numpy as np
 import time, pickle, datetime, copy, collections
 import buyers, algorithms, data, geometric
@@ -10,8 +9,9 @@ def illustrate_learning_preference_buyer(params):
 	# Model
 	buyer = buyers.PreferenceBuyer(no_of_item=no_of_item)
 
-	estimated_valuation_ranges = algorithms.s_pref_list(buyer, debug=True)
-	print estimated_valuation_ranges
+	estimated_valuation_ranges = algorithms.s_pref_list(buyer, delta = 0.00001, debug=False)
+	print 'estimated valuation ranges:', estimated_valuation_ranges
+	print 'true valuation vector:', buyer.get_valuation_vector()
 
 
 def illustrate_learning_constrained_buyer(params):
@@ -46,7 +46,7 @@ def illustrate_learning_constrained_buyer(params):
 if __name__ == '__main__':
 	np.random.seed(2018)
 	params = {}
-	params['no_of_item'] = 3
+	params['no_of_item'] = 30
 
 	# # Sec 4 (realistic)
 	# illustrate_learning_unconstrained_buyer(params)

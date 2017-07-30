@@ -7,8 +7,6 @@ def s_pref_list(buyer, delta = 0.0001, debug=False): # delta is the learning acc
 
 	no_of_item = buyer.get_no_of_item()
 	
-	print 'valuation vector:' , buyer.get_valuation_vector()
-	print 'number of preference list:', buyer.get_no_of_types()
 	types, probabilities = buyer.get_buyer_dist()
 	if debug:
 		for e, t in enumerate(types):
@@ -16,14 +14,13 @@ def s_pref_list(buyer, delta = 0.0001, debug=False): # delta is the learning acc
 
 		
 	# Initialize:
-	list_of_valuation_range = [(0, 1) for _ in range(no_of_item)]
+	list_of_valuation_range = [[0, 1] for _ in range(no_of_item)]
 	L = set()  # set of items learned
 	price_vec = [float("inf") for _ in range(no_of_item)]
 
-	print 'initial range of valuations:', list_of_valuation_range
-#  		print 'price:', price_vec, 'pref-list:', pref_list, 'item bought:', item_bought
-
-	for _ in range(0):
+	iter = 0
+	while L != set([i for i in range(no_of_item)]): # continue until everything is learned
+		iter = iter + 1
 		# Step 1: buyer arrives
 		# Step 2: set prices and stocks
 		price_vec = set_prices(L, no_of_item, list_of_valuation_range)
@@ -33,15 +30,17 @@ def s_pref_list(buyer, delta = 0.0001, debug=False): # delta is the learning acc
 		# Step 4: assume the seller knows the first not-yet-learned item of the buyer's list
 		first_not_yet_learned = find_first_not_yet_learned_item(pref_list, L)
 		# Step 5: shrink the range of this item depending upon purchase/no-purchase
-		if not first_not_yet_learned != float("inf"):  # there is an item in buyer's list which is not yet learned
+		if first_not_yet_learned != float("inf"):  # there is an item in buyer's list which is not yet learned
 			if item_bought == first_not_yet_learned: 
-				(list_of_valuation_range[item_bought])[0] = price_vec[item_bought]
+				(list_of_valuation_range[first_not_yet_learned])[0] = price_vec[first_not_yet_learned]
 			else:
-				(list_of_valuation_range[item_bought])[1] = price_vec[item_bought]
+				(list_of_valuation_range[first_not_yet_learned])[1] = price_vec[first_not_yet_learned]
+			# can add the price changes here itself
 		# Step 6: check if the first-not-yet-learned item got learned due to the shrinkage
 			if is_learned(list_of_valuation_range, first_not_yet_learned, delta): # if yes
 				L.add(first_not_yet_learned) # add to learned set
-
+		
+	print '# iter:', iter
 	return list_of_valuation_range
 
 # checks if an item is learned
@@ -59,14 +58,16 @@ def find_first_not_yet_learned_item(pref_list, L):
 # sets high prices for learned, and mid prices for remaining
 def set_prices(L, no_of_item, list_of_valuation_range):
 	
-	price_vec = []
+	price_vec = [0]*no_of_item
 	epsilon = sys.float_info.epsilon  # a small number epsilon
 	for i in range(no_of_item):
 		if i in L:  # already learned
 			price_vec[i] = (list_of_valuation_range[i])[1] + epsilon  # set high price
 		else:  # not learned
-			print list_of_valuation_range[i]
-			#price_vec[i] = ((list_of_valuation_range[i])[0] + (list_of_valuation_range[i])[1]) / 2  # set middle price
+			#print list_of_valuation_range[i]
+			#print price_vec[i]
+			#print (list_of_valuation_range[i])[0], (list_of_valuation_range[i])[1]
+			price_vec[i] = (float)((list_of_valuation_range[i])[0] + (list_of_valuation_range[i])[1]) / 2  # set middle price
 	
 	return price_vec
 
