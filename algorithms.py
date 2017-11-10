@@ -136,13 +136,17 @@ def s_util_constrained(buyer, realistic=None, initial_radius=1.0 / 2, debug=Fals
 	no_of_item = buyer.get_no_of_item()
 	budget = buyer.get_budget()  # ideally should be learned as well, see paper.	
 	bit_length = buyer.get_bit_length()
+	if no_of_item==3:
+		c0_offset = np.array([0.1, -0.05, 0.15])
+	elif no_of_item==2:
+		c0_offset = np.array([0.1, 0.15])
 
 	Elist = []
-	Elist.append(geometric.Ellipsoid(ctr=buyer.get_valuation_vector() + np.array([0.1, -0.05, 0.15]), shape_mat=initial_radius * np.eye(no_of_item)))
+	Elist.append(geometric.Ellipsoid(ctr=buyer.get_valuation_vector() + c0_offset, shape_mat=initial_radius * np.eye(no_of_item)))
 	Hlist = [None]
 	simplex = geometric.Hyperplane(normal=np.ones(no_of_item) * 1.0 / np.sqrt(no_of_item), rhs=1.0 / np.sqrt(no_of_item))
 
-	for iter_idx in range(1, 7):
+	for iter_idx in range(1, 3):
 
 		# debugging
 		if debug:
@@ -172,7 +176,12 @@ def s_util_constrained(buyer, realistic=None, initial_radius=1.0 / 2, debug=Fals
 
 		# debugging
 		if debug:
-			geometric.plot_debug(Elist[-2:], hyperplane=Hlist[-1], halfspace=Hlist[-1], custom_point=buyer.get_valuation_vector())
+			if no_of_item==3:
+				print '[DEBUG] 3 item setting.'
+				geometric.plot_debug(Elist[-2:], hyperplane=Hlist[-1], halfspace=Hlist[-1], custom_point=buyer.get_valuation_vector())
+			elif no_of_item==2:
+				print '[DEBUG] 2 item setting.'
+				geometric.plot_debug2D(Elist[-2:-1], hyperplane=Hlist[-1], custom_point=buyer.get_valuation_vector())
 
 		
 

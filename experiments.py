@@ -23,7 +23,7 @@ def illustrate_learning_constrained_buyer(params):
 
 	if 'realistic_price_set' not in params:
 		# Algorithm
-		final_set0 = algorithms.s_util_constrained(buyer, realistic=None, initial_radius=1.0 / 2, debug=False)
+		final_set0 = algorithms.s_util_constrained(buyer, realistic=None, initial_radius=1.0 / 2, debug=True)
 		simplex = geometric.Hyperplane(normal=np.ones(no_of_item) * 1.0 / np.sqrt(no_of_item), rhs=1.0 / np.sqrt(no_of_item))
 		final_set = geometric.get_ellipsoid_intersect_hyperplane(final_set0, simplex)
 
@@ -46,16 +46,16 @@ def illustrate_learning_constrained_buyer(params):
 if __name__ == '__main__':
 	np.random.seed(2018)
 	params = {}
-	params['no_of_item'] = 30
+	params['no_of_item'] = 2
 
 	# # Sec 4 (realistic)
 	# illustrate_learning_unconstrained_buyer(params)
 
 	# # Sec 5 (realistic)
-	illustrate_learning_preference_buyer(params)
+	# illustrate_learning_preference_buyer(params)
 
 	# # Sec 6 (unrealistic case)
-	# illustrate_learning_constrained_buyer(params)
+	illustrate_learning_constrained_buyer(params)
 
 	# # Sec 6 (realistic case)
 	# params['realistic_price_set'] = data.get_realistic_prices_synthetic(params['no_of_item'])
