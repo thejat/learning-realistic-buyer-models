@@ -145,11 +145,16 @@ def s_util_constrained(buyer, realistic=None, initial_radius=1.0 / 2, debug=Fals
 	Elist.append(geometric.Ellipsoid(ctr=buyer.get_valuation_vector() + c0_offset, shape_mat=initial_radius * np.eye(no_of_item)))
 	Hlist = [None]
 	simplex = geometric.Hyperplane(normal=np.ones(no_of_item) * 1.0 / np.sqrt(no_of_item), rhs=1.0 / np.sqrt(no_of_item))
-
-	for iter_idx in range(1, 3):
+	HlistSimplex = []
+	for iter_idx in range(1, 5):
 
 		# debugging
 		if debug:
+			print "*******************************************************"
+			# print 'iter_idx',iter_idx
+			# print Elist[iter_idx - 1].get_center()
+			# print Elist[iter_idx - 1].get_volume()
+			print 'a*:', buyer.get_valuation_vector()
 			print 'iter:', iter_idx, ', vol: ', np.around(Elist[iter_idx - 1].get_volume(), 3) , ',eigs:', np.around(Elist[iter_idx - 1].get_eigenvals(), 3), ',ctr:', np.around(Elist[iter_idx - 1].get_center(), 3), ', a^* belongs:', Elist[iter_idx - 1].get_membership(buyer.get_valuation_vector())
 
 		# cylinder_current = geometric.get_ellipsoid_intersect_hyperplane(Elist[iter_idx-1],simplex)
@@ -159,20 +164,24 @@ def s_util_constrained(buyer, realistic=None, initial_radius=1.0 / 2, debug=Fals
 
 		# #debugging
 		if debug:
+			print "\t price posted:", p_ij_best
 			print "\t bundle bought:", x
+                        print "\t p_bar", p_bar_best
 			print "\t pTa*", np.dot(p_bar_best, buyer.get_valuation_vector())
 			print "\t pTc", np.dot(p_bar_best, Elist[iter_idx - 1].get_center())
 
 
 		Hlist.append(get_hyperplane_given_bundle_and_price(x, p_bar_best, ij_best, Elist[iter_idx - 1].get_center()))
 		if debug:
-			print '\t halfspace normal:', Hlist[-1].get_normal(), ', rhs:', Hlist[-1].get_rhs()
+			print '\t halfspace normal:', Hlist[-1].get_normal(), ', rhs:', Hlist[-1].get_rhs(), 'dir:',Hlist[-1].get_direction()
 
-		temp_ellipsoid = geometric.get_min_vol_ellipsoid(Elist[iter_idx - 1], Hlist[iter_idx])
-		if temp_ellipsoid.get_membership(buyer.get_valuation_vector()) is False:
-			break
+		temp_ellipsoid1 = geometric.get_min_vol_ellipsoid(Elist[iter_idx - 1], Hlist[iter_idx])
+		HlistSimplex.append(get_degree_of_freedom_reduction_hyperplane(temp_ellipsoid1.get_center(),no_of_item))
+		temp_ellipsoid2 = geometric.get_min_vol_ellipsoid(temp_ellipsoid1,HlistSimplex[-1])
+		#if temp_ellipsoid.get_membership(buyer.get_valuation_vector()) is False:
+		#	break
 
-		Elist.append(temp_ellipsoid)
+		Elist.append(temp_ellipsoid2)
 
 		# debugging
 		if debug:
@@ -181,7 +190,8 @@ def s_util_constrained(buyer, realistic=None, initial_radius=1.0 / 2, debug=Fals
 				geometric.plot_debug(Elist[-2:], hyperplane=Hlist[-1], halfspace=Hlist[-1], custom_point=buyer.get_valuation_vector())
 			elif no_of_item==2:
 				print '[DEBUG] 2 item setting.'
-				geometric.plot_debug2D(Elist[-2:-1], hyperplane=Hlist[-1], custom_point=buyer.get_valuation_vector())
+				temp_ellipsoids = [Elist[-2],temp_ellipsoid1,Elist[-1]]
+				geometric.plot_debug2D(temp_ellipsoids, halfspace=Hlist[-1], custom_point=buyer.get_valuation_vector(),halfspace2 = HlistSimplex[-1])
 
 		
 
@@ -194,6 +204,14 @@ def s_util_constrained(buyer, realistic=None, initial_radius=1.0 / 2, debug=Fals
 
 	return Elist[-1]
 
+def get_degree_of_freedom_reduction_hyperplane(center, dim):
+	p_vec = np.ones(dim)
+	if (np.dot(p_vec,center)<=1):
+		H = geometric.SpecialHalfspace(pvec=p_vec, cvec=center, direction= 'geq')
+	else:
+		H = geometric.SpecialHalfspace(pvec=p_vec, cvec=center, direction= 'leq')
+	return H
+
 def get_hyperplane_given_bundle_and_price(x, p_bar_best, ij_best, c):
 	'''
 	We know only i,j should be sensitized
@@ -203,8 +221,7 @@ def get_hyperplane_given_bundle_and_price(x, p_bar_best, ij_best, c):
 	tolerance = 1e-5
 	assert abs(np.dot(p_bar_best, c)) <= tolerance
 
-
-	if (x[ij_best[0]] > 0 and x[ij_best[1]] == 0) or (x[ij_best[0]] == 1 and x[ij_best[1]] < 1):
+	if (x[ij_best[0]] > 0 and x[ij_best[1]] == 0) or (x[ij_best[0]] == 1 and(x[ij_best[1]] >=0 and x[ij_best[1]] < 1)):
 		# then a1^*/p1 \geq a2^*/p2 or np.dot(p_bar_best,a^*) geq 0
 		H = geometric.SpecialHalfspace(pvec=p_bar_best, cvec=c, direction='geq')
 	else:
