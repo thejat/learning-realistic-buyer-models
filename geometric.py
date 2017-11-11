@@ -395,7 +395,7 @@ def plot_debug2D(ellipsoids, halfspace=None, custom_point=None, halfspace2 = Non
 	# ax.plot(x,y,color='b', alpha=0.2)
 
 	#plot the degree-of-freedom-reduction hyperplane (passing through center)
-	ctr = ellipsoids[0].get_center()
+	ctr = ellipsoids[1].get_center()
 	x = np.linspace(-max_radius, max_radius,5)
 	#c = np.ones(2)
 	y = (ctr[0] + ctr[1]) - x
