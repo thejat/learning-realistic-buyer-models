@@ -46,7 +46,7 @@ def illustrate_learning_constrained_buyer(params):
 if __name__ == '__main__':
 	np.random.seed(2018)
 	params = {}
-	params['no_of_item'] = 2
+	params['no_of_item'] = 3
 
 	# # Sec 4 (realistic)
 	# illustrate_learning_unconstrained_buyer(params)

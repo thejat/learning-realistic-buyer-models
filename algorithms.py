@@ -140,6 +140,8 @@ def s_util_constrained(buyer, realistic=None, initial_radius=1.0 / 2, debug=Fals
 		c0_offset = np.array([0.1, -0.05, 0.15])
 	elif no_of_item==2:
 		c0_offset = np.array([0.1, 0.15])
+	else:
+		c0_offset = np.zeros(no_of_item) #np.ones(no_of_item)*1e-1
 
 	Elist = []
 	Elist.append(geometric.Ellipsoid(ctr=buyer.get_valuation_vector() + c0_offset, shape_mat=initial_radius * np.eye(no_of_item)))
@@ -177,9 +179,19 @@ def s_util_constrained(buyer, realistic=None, initial_radius=1.0 / 2, debug=Fals
 
 		temp_ellipsoid1 = geometric.get_min_vol_ellipsoid(Elist[iter_idx - 1], Hlist[iter_idx])
 		HlistSimplex.append(get_degree_of_freedom_reduction_hyperplane(temp_ellipsoid1.get_center(),no_of_item))
-		temp_ellipsoid2 = geometric.get_min_vol_ellipsoid(temp_ellipsoid1,HlistSimplex[-1])
+		temp_ellipsoid2 = geometric.get_min_vol_ellipsoid(temp_ellipsoid1,HlistSimplex[-1]) 
+
+		###debug
+		# temp_ellipsoid2 = temp_ellipsoid1
+		# print "*******************************************************"
+		# print 'iter:', iter_idx, ', max eig old:', np.max(np.around(Elist[iter_idx - 1].get_eigenvals(), 3)), ', max eig old:',np.max(np.around(temp_ellipsoid1.get_eigenvals(), 3))
+
+		print 'iter:', iter_idx, ', max eig:', np.max(np.around(Elist[iter_idx - 1].get_eigenvals(), 3)),', vol: ', np.around(Elist[iter_idx - 1].get_volume(), 3), ', min eig:', np.min(Elist[iter_idx - 1].get_eigenvals())
+
 		#if temp_ellipsoid.get_membership(buyer.get_valuation_vector()) is False:
 		#	break
+
+
 
 		Elist.append(temp_ellipsoid2)
 
