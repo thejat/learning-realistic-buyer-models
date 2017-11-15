@@ -148,7 +148,7 @@ def s_util_constrained(buyer, realistic=None, initial_radius=1.0 / 2, debug=Fals
 	Hlist = [None]
 	simplex = geometric.Hyperplane(normal=np.ones(no_of_item) * 1.0 / np.sqrt(no_of_item), rhs=1.0 / np.sqrt(no_of_item))
 	HlistSimplex = []
-	for iter_idx in range(1, 5):
+	for iter_idx in range(1, 1000):
 
 		# debugging
 		if debug:
@@ -186,7 +186,7 @@ def s_util_constrained(buyer, realistic=None, initial_radius=1.0 / 2, debug=Fals
 		# print "*******************************************************"
 		# print 'iter:', iter_idx, ', max eig old:', np.max(np.around(Elist[iter_idx - 1].get_eigenvals(), 3)), ', max eig old:',np.max(np.around(temp_ellipsoid1.get_eigenvals(), 3))
 
-		print 'iter:', iter_idx, ', max eig:', np.max(np.around(Elist[iter_idx - 1].get_eigenvals(), 3)),', vol: ', np.around(Elist[iter_idx - 1].get_volume(), 3), ', min eig:', np.min(Elist[iter_idx - 1].get_eigenvals())
+		print 'iter:', iter_idx, ', a^* belongs:', Elist[iter_idx - 1].get_membership(buyer.get_valuation_vector()), ', max eig:', np.max(np.around(Elist[iter_idx - 1].get_eigenvals(), 3)),', vol: ', np.around(Elist[iter_idx - 1].get_volume(), 10), ', min eig:', np.min(np.around(Elist[iter_idx - 1].get_eigenvals(),5))
 
 		#if temp_ellipsoid.get_membership(buyer.get_valuation_vector()) is False:
 		#	break
@@ -196,6 +196,7 @@ def s_util_constrained(buyer, realistic=None, initial_radius=1.0 / 2, debug=Fals
 		Elist.append(temp_ellipsoid2)
 
 		# debugging
+		debug = False
 		if debug:
 			if no_of_item==3:
 				print '[DEBUG] 3 item setting.'
