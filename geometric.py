@@ -115,6 +115,10 @@ class SpecialHalfspace(Halfspace):
 	def get_pvec(self):
 		return self.pvec
 
+	def get_cvec(self):
+		return self.cvec
+
+
 def get_min_vol_ellipsoid(ellipsoid,halfpsace):
 	tolerance = 1e-4
 
