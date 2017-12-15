@@ -18,7 +18,7 @@ def get_min_vol_ellipsoid(ellipsoid,halfpsace):
 	p = halfpsace.get_pvec()
 
 	b = np.dot(A,p)*1.0/np.sqrt(np.dot(p,np.dot(A,p)))
-	print "b=", b, "A=",A
+	#print "b=", b, "A=",A
 
 	if halfpsace.get_direction()=='leq':
 		new_c = c - b*1.0/(n+1)
@@ -26,7 +26,7 @@ def get_min_vol_ellipsoid(ellipsoid,halfpsace):
 		new_c = c + b*1.0/(n+1)
 
 	new_A = ((n**2)*1.0/((n**2)-1))*(A - (2.0/(n+1))*np.outer(b,b))
-	print "new_A=", new_A, "new_c=", new_c
+	#print "new_A=", new_A, "new_c=", new_c
 
 	return geometric.Ellipsoid(ctr=new_c,shape_mat=new_A)
 
@@ -93,10 +93,12 @@ def plot_debug2D(ellipsoids, halfspace=None, custom_point=None, halfspace2 = Non
 	plt.gca().set_aspect('equal', adjustable='box') # makes square plots
 	ax.plot(x,y,color='b', alpha=0.2)
 
+	ax.scatter(-0.9,0.5,s=30)
 	plt.show()
 
 if __name__=='__main__':
 	ellipsoid = geometric.Ellipsoid(ctr=0.5*np.ones(2),shape_mat=np.array([[1,0],[0,1]]))
+	print ellipsoid.get_membership(point=np.array([-0.9, 0.5]))
 	halfspace = geometric.SpecialHalfspace(pvec= np.array([1,0]), cvec=ellipsoid.get_center(), direction= 'leq')
 	ellipsoid2 = get_min_vol_ellipsoid(ellipsoid, halfspace)
 	plot_debug2D([ellipsoid, ellipsoid2],halfspace=halfspace)
