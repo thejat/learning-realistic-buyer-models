@@ -13,7 +13,6 @@ def illustrate_learning_preference_buyer(params):
 	print 'estimated valuation ranges:', estimated_valuation_ranges
 	print 'true valuation vector:', buyer.get_valuation_vector()
 
-
 def illustrate_learning_constrained_buyer(params):
 	# Local
 	no_of_item = params['no_of_item']
@@ -40,7 +39,12 @@ def illustrate_learning_constrained_buyer(params):
 	# # print '\tfinal set eigs',final_set.get_eigenvals()
 	# print '\tTruth:', buyer.get_valuation_vector()
 
+def illustrate_learning_unconstrained_buyer(params):
+	#Local
+	no_of_item = params['no_of_item']
 
+	#Model
+	buyer = buyers.
 
 
 if __name__ == '__main__':

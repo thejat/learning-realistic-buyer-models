@@ -3,10 +3,10 @@ import pulp #tbd: gurobipy/cplex
 
 class Buyer(object):
 
-	def __init__(self):
-		#ideally, this init should not be called
-		self.no_of_item = 3
-		self.bit_length = 5
+	def __init__(self, no_of_item=3, bit_length=5):
+		self.no_of_item = no_of_item
+		self.bit_length = bit_length
+		self.set_valuation_vector()
 
 	def get_no_of_item(self):
 		#assuming this attribute exists, potential bug
@@ -71,7 +71,6 @@ class PreferenceBuyer(Buyer):
 	def get_no_of_types(self):
 		return self.no_of_types
 		
-
 class UtilityBuyer(Buyer):
 
 	def __init__(self,no_of_item=3,bit_length=10):
@@ -146,9 +145,8 @@ class UtilityBuyer(Buyer):
 		# return self.get_constrained_bundle(price_vec)
 		return self.get_constrained_bundle_non_lp(price_vec)
 
-
 if __name__=='__main__':
-	np.random.seed(2018)
+	np.random.seed(2019)
 
 	#debugging	
 	# no_of_item = 5
@@ -170,10 +168,14 @@ if __name__=='__main__':
 
 
 	##debugging
-	b = PreferenceBuyer(no_of_item=3)
+	# b = PreferenceBuyer(no_of_item=3)
+	# print b.get_valuation_vector()
+	# types,probabilities = b.get_buyer_dist()
+	# for e,t in enumerate(types):
+	# 	print t, probabilities[e]
+	# for i in range(10):
+	# 	print b.sample_a_list()
+
+	##debugging UnconstrainedBuyer
+	b = Buyer(no_of_item=4)
 	print b.get_valuation_vector()
-	types,probabilities = b.get_buyer_dist()
-	for e,t in enumerate(types):
-		print t, probabilities[e]
-	for i in range(10):
-		print b.sample_a_list()
