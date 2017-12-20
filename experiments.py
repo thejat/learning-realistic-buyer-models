@@ -44,7 +44,9 @@ def illustrate_learning_unconstrained_buyer(params):
 	no_of_item = params['no_of_item']
 
 	#Model
-	buyer = buyers.
+	buyer = buyers.Buyer(no_of_item=no_of_item)
+
+	algorithms
 
 
 if __name__ == '__main__':
