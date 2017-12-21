@@ -1,5 +1,6 @@
 import numpy as np
 import pulp #tbd: gurobipy/cplex
+import cvxpy as cvx
 
 class Buyer(object):
 
@@ -20,7 +21,64 @@ class Buyer(object):
 		for k in range(self.no_of_item):
 			while self.utility_coeffs_linear[k]==0:
 				self.utility_coeffs_linear[k] = np.random.randint(2**self.bit_length)*1.0/(2**self.bit_length)
-		self.utility_coeffs_linear = self.utility_coeffs_linear/np.sum(self.utility_coeffs_linear)
+		#self.utility_coeffs_linear = self.utility_coeffs_linear/np.sum(self.utility_coeffs_linear)
+
+	# returns the optimal bundle bought
+	def get_unconstrained_bundle(self, price_vec):
+		# pertubation constant
+		mu = 50
+		
+		# variable
+		x = cvx.Variable(self.no_of_item)
+		
+		# buyer's utility 
+		a = self.utility_coeffs_linear
+		utility = a.T*x
+		
+		# perturbation added to achieve unique OPT
+		perturbation = float (4)/mu * cvx.sum_entries(cvx.sqrt(x))
+
+		# obejctive which is maximized
+		utility = utility + perturbation
+		obj = cvx.Maximize(utility - price_vec.T*x)
+
+		# constraint set C
+		constraints = [x >= 0, x <= 1]
+
+		# solve
+		prob = cvx.Problem(obj, constraints)
+		prob.solve()
+
+		if (prob.status == 'optimal'):
+			#print "a^Tx = ", a.T*x.value
+			#print "utility = ", a.T*x.value + float (4)/mu * cvx.sum_entries(cvx.sqrt(x.value)) 
+			#print "utility = ", prob.value + price_vec.T*x.value 
+			return np.array(x.value).ravel()
+
+		else:
+			return prob.status, np.nan, np.nan	
+
+	def get_gp1(self, p, x_hat):
+		# variable
+		x = cvx.Variable(self.no_of_item)
+
+		# objective
+		a = self.utility_coeffs_linear
+		utility = a.T*x
+		mu = 50
+		perturbation = float (4)/mu * cvx.sum_entries(cvx.sqrt(x))
+		utility = utility + perturbation
+		obj = cvx.Maximize(utility - p.T*x + np.inner(p, x_hat))
+
+		# constraint 
+		constraints = [x >= 0, x <= 1]
+
+		# solve
+		prob = cvx.Problem(obj, constraints)
+		prob.solve() 
+
+		if (prob.status == 'optimal'):
+			return prob.value		
 
 class PreferenceBuyer(Buyer):
 
@@ -177,5 +235,13 @@ if __name__=='__main__':
 	# 	print b.sample_a_list()
 
 	##debugging UnconstrainedBuyer
-	b = Buyer(no_of_item=4)
-	print b.get_valuation_vector()
+	no_of_item = 4
+	b = Buyer(no_of_item = no_of_item)
+	# print "valuation vector: ", b.get_valuation_vector()
+	# price_vec = np.random.rand(no_of_item)
+	# print "price vector: ", price_vec
+	# x = b.get_unconstrained_bundle(price_vec)
+	# print "optimal bundle: ", x
+	x_hat = np.array([0.01144068, 0.28162135, 1.0, 0.07832548])
+	p = 0.67 * np.ones(no_of_item)
+	print b.get_gp1(p, x_hat)

@@ -1,6 +1,9 @@
 import numpy as np
 import sys
-import geometric, buyers
+import buyers
+import cvxpy as cvx
+from numpy import linalg as LA
+
 np.random.seed(2018)
 
 def s_pref_list(buyer, delta = 0.0001, debug=False): # delta is the learning accuracy
@@ -73,6 +76,46 @@ def set_prices(L, no_of_item, list_of_valuation_range):
 
 def s_util_unconstrained():
 	return NotImplementedError
+
+def learn_value(x_hat, tau, buyer):
+	no_of_item = buyer.get_no_of_item()
+
+	# initialize p_1 and T
+	# T = 50 * gamma2 * mu2/(tau - R**2*gamma2)
+	T = 100
+	p = np.zeros(shape=(T+1, no_of_item))
+	p[1] = 0.67 * np.ones(no_of_item)
+
+	#output = buyer.get_gp1(p[1], x_hat)
+	output = 0
+	for t in range(1, T):
+		x_star = buyer.get_unconstrained_bundle(p[t])
+		gradient = np.zeros(no_of_item)
+		gradient = x_hat - x_star
+		eta = float (1) / (T * LA.norm(gradient))
+		p[t+1] = projection(p[t] - [eta*x for x in gradient], no_of_item)
+		output += np.dot(gradient,(p[t+1] - p[t]))
+
+	print output
+
+# computes projected price
+def projection(price, dim): 	
+
+	# variable
+	price_prime = cvx.Variable(dim)
+
+	# objective
+	obj = cvx.Minimize(1/2* cvx.norm(price - price_prime)**2)
+
+	# constraint 
+	constraints = [price_prime >= 0]
+
+	# solve
+	prob = cvx.Problem(obj, constraints)
+	prob.solve() 
+
+	if (prob.status == 'optimal'):
+		return np.array(price_prime.value).ravel()
 
 def s_balcan(buyer, debug=False):
 
@@ -278,18 +321,16 @@ def get_best_price_from_candidate_prices(no_of_item, budget, bit_length, ellipso
 
 	return [p_candidate_dict[ij_best], p_bar_best, ij_best]
 
-
-
 if __name__ == '__main__':
 	np.random.seed(2018)
 
 
 
 	# #debugging s_pref_list
-	no_of_item = 10
-	buyer = buyers.PreferenceBuyer(no_of_item=no_of_item)
-	a_estimated_pref_list = s_pref_list(buyer, debug=True)
-	print 'Estimated: ', a_estimated_pref_list, ' Truth: ', buyer.get_valuation_vector()
+	# no_of_item = 10
+	# buyer = buyers.PreferenceBuyer(no_of_item=no_of_item)
+	# a_estimated_pref_list = s_pref_list(buyer, debug=True)
+	# print 'Estimated: ', a_estimated_pref_list, ' Truth: ', buyer.get_valuation_vector()
 
 
 	# #debugging s_balcan
@@ -324,3 +365,9 @@ if __name__ == '__main__':
 	# Hlist.append(get_hyperplane_given_bundle_and_price(x,p_bar_best,ij_best,Elist[iter_idx-1].get_center()))
 	# Elist.append(geometric.get_min_vol_ellipsoid(Elist[iter_idx-1],Hlist[iter_idx]))
 	# p_ij_best1,p_bar_best1,ij_best1 = get_best_price_from_candidate_prices(no_of_item,budget,bit_length,Elist[1])
+
+	# debugging s_util_unconstrained
+	no_of_item = 4
+	buyer = buyers.Buyer(no_of_item = no_of_item)
+	x_hat = np.array([0.01144068, 0.28162135, 1.0, 0.07832548])
+	learn_value(x_hat, 0.001, buyer)

@@ -205,7 +205,7 @@ def get_ellipsoid_intersect_hyperplane(ellipsoid,hyperplane):
 
 	return output_ellipsoid
 
-from mpl_toolkits.mplot3d import Axes3D
+#from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
 def plot_debug(ellipsoids,hyperplane=None,halfspace=None,custom_point=None):
