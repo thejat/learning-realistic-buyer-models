@@ -82,21 +82,39 @@ def learn_value(x_hat, tau, buyer):
 
 	# initialize p_1 and T
 	# T = 50 * gamma2 * mu2/(tau - R**2*gamma2)
-	T = 100
+	T = 3
 	p = np.zeros(shape=(T+1, no_of_item))
 	p[1] = 0.67 * np.ones(no_of_item)
 
-	#output = buyer.get_gp1(p[1], x_hat)
-	output = 0
+	output = buyer.get_gp(p[1], x_hat)
+	#output = 0
+	print "x_hat = ", x_hat
 	for t in range(1, T):
 		x_star = buyer.get_unconstrained_bundle(p[t])
 		gradient = np.zeros(no_of_item)
 		gradient = x_hat - x_star
 		eta = float (1) / (T * LA.norm(gradient))
-		p[t+1] = projection(p[t] - [eta*x for x in gradient], no_of_item)
-		output += np.dot(gradient,(p[t+1] - p[t]))
+		updated_p = p[t] - [eta*x for x in gradient]
+		proj = projection(updated_p, no_of_item)
+		
+		# debugging
+		print "p[", t, "]=" " ", p[t]
+		print "g(p[", t,"]=", buyer.get_gp(p[t], x_hat)
+		#print "x* =", x_star
+		print "gradient = ", gradient
+		print "eta = ", eta 
+		print "updated p = ", updated_p
+		print "proj = ", proj
 
-	print output
+		p[t+1] = proj
+		print "p[", t+1, "]=" " ", p[t+1]
+		output += np.dot(gradient,(p[t+1] - p[t]))
+		print "our estimate of ", "g(p[", t+1,"]= ", output
+		print "********************************************************************************************"
+		
+	print "output = ", output
+
+	#print p[T], buyer.get_gp(p[T], x_hat) 
 
 # computes projected price
 def projection(price, dim): 	
@@ -105,7 +123,7 @@ def projection(price, dim):
 	price_prime = cvx.Variable(dim)
 
 	# objective
-	obj = cvx.Minimize(1/2* cvx.norm(price - price_prime)**2)
+	obj = cvx.Minimize(1/float(2)*cvx.norm(price - price_prime)**2)
 
 	# constraint 
 	constraints = [price_prime >= 0]
@@ -322,7 +340,7 @@ def get_best_price_from_candidate_prices(no_of_item, budget, bit_length, ellipso
 	return [p_candidate_dict[ij_best], p_bar_best, ij_best]
 
 if __name__ == '__main__':
-	np.random.seed(2018)
+	np.random.seed(2019)
 
 
 
@@ -371,3 +389,7 @@ if __name__ == '__main__':
 	buyer = buyers.Buyer(no_of_item = no_of_item)
 	x_hat = np.array([0.01144068, 0.28162135, 1.0, 0.07832548])
 	learn_value(x_hat, 0.001, buyer)
+	
+	# p = 0.67 * np.ones(no_of_item)
+	# output = buyer.get_gp(p, x_hat)
+	# print output

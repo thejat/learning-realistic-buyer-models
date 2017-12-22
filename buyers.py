@@ -4,10 +4,11 @@ import cvxpy as cvx
 
 class Buyer(object):
 
-	def __init__(self, no_of_item=3, bit_length=5):
+	def __init__(self, no_of_item=3, bit_length=5, mu=50):
 		self.no_of_item = no_of_item
 		self.bit_length = bit_length
 		self.set_valuation_vector()
+		self.mu = mu
 
 	def get_no_of_item(self):
 		#assuming this attribute exists, potential bug
@@ -58,7 +59,7 @@ class Buyer(object):
 		else:
 			return prob.status, np.nan, np.nan	
 
-	def get_gp1(self, p, x_hat):
+	def get_gp(self, p, x_hat):
 		# variable
 		x = cvx.Variable(self.no_of_item)
 
@@ -79,6 +80,21 @@ class Buyer(object):
 
 		if (prob.status == 'optimal'):
 			return prob.value		
+
+	def primal(self, x_hat):
+		x = cvx.Variable(self.no_of_item)
+
+		a = self.utility_coeffs_linear
+
+		obj = cvx.Maximize(a.T*x + float (4)/self.mu * cvx.sum_entries(cvx.sqrt(x)))
+
+		constraints = [x>=0, x<=1, x <= x_hat]
+
+		prob = cvx.Problem(obj, constraints)
+		prob.solve()
+
+		if (prob.status == 'optimal'):
+			return prob.value, np.array(x.value).ravel(), np.array(constraints[2].dual_value).ravel()
 
 class PreferenceBuyer(Buyer):
 
@@ -243,5 +259,12 @@ if __name__=='__main__':
 	# x = b.get_unconstrained_bundle(price_vec)
 	# print "optimal bundle: ", x
 	x_hat = np.array([0.01144068, 0.28162135, 1.0, 0.07832548])
-	p = 0.67 * np.ones(no_of_item)
-	print b.get_gp1(p, x_hat)
+	#p = 0.67 * np.ones(no_of_item)
+	#print b.get_gp1(p, x_hat)
+
+	OPT, x, p = b.primal(x_hat)
+	print "x_hat = ", x_hat
+	print "PRIMAL OPT = ", OPT, "PRIMAL SOLUTION = ", x
+	print "DUAL OPT = ", b.get_gp(p, x_hat), "DUAL SOLUTION = ", p
+	some_p = 0.67 * np.ones(no_of_item)
+	print "DUAL VALUE AT", "p = ", some_p, " is ", b.get_gp(some_p, x_hat)
