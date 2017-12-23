@@ -74,48 +74,76 @@ def set_prices(L, no_of_item, list_of_valuation_range):
 	
 	return price_vec
 
-def s_util_unconstrained():
-	return NotImplementedError
+def s_util_unconstrained(buyer, epsilon):
+	
+	no_of_item = buyer.get_no_of_item()
+
+	if no_of_item == 4:
+		c0_offset = np.array([0.1, -0.05, 0.015])
+	else:
+		c0_offset = np.zeros(no_of_item) #np.ones(no_of_item)*1e-1
+
+	# create the initail uncertainty ellipsoid
+	initial_radius = 0.5
+	E0 = geometric.ellipsoid(ctr = buyer.get_valuation_vector() + c0_offset, shape_mat = initial_radius * np.eye(no_of_item))
+	A0 = initial_radius * np.eye(no_of_item)
+
+def pick_bundle(A, tau, dim):
+
+	# varaible
+	x = cvx.Variable(dim)
+
+	# objective
+	obj = cvx.Minimize(0)
+	#obj = cvx.Maximize(cvx.norm(x))
+
+	# constraint set C
+	constraints = [x>=0, x<=1, -cvx.quad_form(x, A) <= (2 * tau * dim)**2]
+
+	# solve
+	prob = cvx.Problem(obj, constraints)
+	prob.solve()
+
+	print prob.status, x.value
+	if (prob.status == 'optimal'):
+		print np.array(x.value).ravel()
+	#else:
+	#	print "optimal does not exist"
 
 def learn_value(x_hat, tau, buyer):
 	no_of_item = buyer.get_no_of_item()
 
 	# initialize p_1 and T
 	# T = 50 * gamma2 * mu2/(tau - R**2*gamma2)
-	T = 3
+	T = 500
 	p = np.zeros(shape=(T+1, no_of_item))
 	p[1] = 0.67 * np.ones(no_of_item)
 
-	output = buyer.get_gp(p[1], x_hat)
-	#output = 0
-	print "x_hat = ", x_hat
+	# this is the estimate that learn_value returns
+	our_estimate = buyer.get_gp(p[1], x_hat)
+	
 	for t in range(1, T):
 		x_star = buyer.get_unconstrained_bundle(p[t])
-		gradient = np.zeros(no_of_item)
 		gradient = x_hat - x_star
 		eta = float (1) / (T * LA.norm(gradient))
-		updated_p = p[t] - [eta*x for x in gradient]
+		updated_p = p[t] - eta*gradient
 		proj = projection(updated_p, no_of_item)
-		
-		# debugging
-		print "p[", t, "]=" " ", p[t]
-		print "g(p[", t,"]=", buyer.get_gp(p[t], x_hat)
-		#print "x* =", x_star
-		print "gradient = ", gradient
-		print "eta = ", eta 
-		print "updated p = ", updated_p
-		print "proj = ", proj
-
 		p[t+1] = proj
-		print "p[", t+1, "]=" " ", p[t+1]
-		output += np.dot(gradient,(p[t+1] - p[t]))
-		print "our estimate of ", "g(p[", t+1,"]= ", output
-		print "********************************************************************************************"
+		our_estimate += np.dot(gradient,(p[t+1] - p[t])) + float (50)/2 * LA.norm(p[t+1] - p[t])**2
 		
-	print "output = ", output
-
-	#print p[T], buyer.get_gp(p[T], x_hat) 
-
+		# # debugging
+		# print "p[", t, "]=" " ", p[t]
+		# print "g(p[", t,"]=", buyer.get_gp(p[t], x_hat)
+		# print "x* =", x_star
+		# print "gradient = ", gradient
+		# print "eta = ", eta 
+		# print "updated p = ", updated_p
+		# print "proj = ", proj
+		# print "step length = ", LA.norm(p[t+1]-p[t])
+		# print "our estimate of ", "g(p[", t+1,"]= ", our_estimate 
+		# print "********************************************************************************************"
+	return our_estimate	
+	
 # computes projected price
 def projection(price, dim): 	
 
@@ -388,7 +416,9 @@ if __name__ == '__main__':
 	no_of_item = 4
 	buyer = buyers.Buyer(no_of_item = no_of_item)
 	x_hat = np.array([0.01144068, 0.28162135, 1.0, 0.07832548])
-	learn_value(x_hat, 0.001, buyer)
+	#learn_value(x_hat, 0.001, buyer)
+
+	pick_bundle(0.5 * np.eye(no_of_item), 0.01, no_of_item)
 	
 	# p = 0.67 * np.ones(no_of_item)
 	# output = buyer.get_gp(p, x_hat)
