@@ -91,22 +91,40 @@ def s_util_unconstrained(buyer, epsilon):
 def pick_bundle(A, tau, dim):
 
 	# varaible
-	x = cvx.Variable(dim)
+	t = cvx.Variable()
+	lamda = cvx.Variable()
+	#constraint_matrix = cvx.Variable(dim + 1, dim + 1)
+	constraint_matrix = cvx.Semidef(dim+1)
+	
+	I = np.eye(dim)
 
 	# objective
-	obj = cvx.Minimize(0)
-	#obj = cvx.Maximize(cvx.norm(x))
+	obj = cvx.Maximize(-t-lamda)
+	
+	# constraints
+	constraints = []
+	for i in range(dim):
+		for j in range(dim):
+			constraints += [ constraint_matrix[i,j] ==  A[i,j] + lamda * I[i,j] ]
 
-	# constraint set C
-	constraints = [x>=0, x<=1, -cvx.quad_form(x, A) <= (2 * tau * dim)**2]
+	for i in range(dim):
+			constraints += [ constraint_matrix[i,dim] == 0]
+
+	for j in range(dim):
+			constraints += [ constraint_matrix[dim,j] == 0]
+
+	constraints += [constraint_matrix[dim,dim] == t] 
 
 	# solve
 	prob = cvx.Problem(obj, constraints)
 	prob.solve()
+	#print prob.status
+	#print constraint_matrix
+	#print "t = ", t.value
+	#print "lambda = ", lamda.value
 
-	print prob.status, x.value
-	if (prob.status == 'optimal'):
-		print np.array(x.value).ravel()
+	#if (prob.status == 'optimal'):
+	#	print prob.value
 	#else:
 	#	print "optimal does not exist"
 
