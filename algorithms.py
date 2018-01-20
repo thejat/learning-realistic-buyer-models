@@ -78,15 +78,23 @@ def s_util_unconstrained(buyer, epsilon):
 	
 	no_of_item = buyer.get_no_of_item()
 
-	if no_of_item == 4:
-		c0_offset = np.array([0.1, -0.05, 0.015])
-	else:
-		c0_offset = np.zeros(no_of_item) #np.ones(no_of_item)*1e-1
+	c0_offset = np.zeros(no_of_item)
 
 	# create the initail uncertainty ellipsoid
 	initial_radius = 0.5
-	E0 = geometric.ellipsoid(ctr = buyer.get_valuation_vector() + c0_offset, shape_mat = initial_radius * np.eye(no_of_item))
 	A0 = initial_radius * np.eye(no_of_item)
+	E0 = geometric.ellipsoid(ctr = buyer.get_valuation_vector() + c0_offset, shape_mat = A0)
+	
+	# pick initial bundle
+	w,v = LA.eig(A0)
+	x = v[no_of_item-1] # maximum eigen vector
+
+	ellip = E0
+	for i in range(3):
+		our_estimate = learn_value(x, 0.001, buyer)
+		center = ellip.get_center()
+		if (our_estimate <= np.dot(x, center)):
+			
 
 def pick_bundle(A, tau, dim):
 
@@ -123,10 +131,27 @@ def pick_bundle(A, tau, dim):
 	#print "t = ", t.value
 	#print "lambda = ", lamda.value
 
-	#if (prob.status == 'optimal'):
-	#	print prob.value
+	if (prob.status == 'optimal'):
+		print prob.value
+		print "lambda = ", lamda.value
+		print "smallest eigen vector = "
+		eigen_vector(A, lamda.value, dim)
+
+
 	#else:
 	#	print "optimal does not exist"
+
+def eigen_vector(A, lamda, dim):
+
+	x = cvx.Variable(dim)
+
+	obj = cvx.Minimize(cvx.quad_form(x, A+lamda*np.eye(dim)))
+	constraints = []
+
+	prob = cvx.Problem(obj, constraints)
+	prob.solve()
+
+	print prob.status	
 
 def learn_value(x_hat, tau, buyer):
 	no_of_item = buyer.get_no_of_item()
@@ -433,10 +458,19 @@ if __name__ == '__main__':
 	# debugging s_util_unconstrained
 	no_of_item = 4
 	buyer = buyers.Buyer(no_of_item = no_of_item)
-	x_hat = np.array([0.01144068, 0.28162135, 1.0, 0.07832548])
+	#x_hat = np.array([0.01144068, 0.28162135, 1.0, 0.07832548])
 	#learn_value(x_hat, 0.001, buyer)
 
-	pick_bundle(0.5 * np.eye(no_of_item), 0.01, no_of_item)
+	# A = 0.5 * np.eye(no_of_item)
+	# A[3,3] = 0.8
+	# A[1,1] = 0.6
+	# A[2,2] = 0.7
+	#A = np.array([[1,7,3], [7,4,-5], [3, -5, 6]])
+	#print A
+	#print "Min eigen value:"
+	#w,v = LA.eig(A)
+	#print w
+	#pick_bundle(A, 0.01, 3)
 	
 	# p = 0.67 * np.ones(no_of_item)
 	# output = buyer.get_gp(p, x_hat)

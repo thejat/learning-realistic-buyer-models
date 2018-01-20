@@ -83,7 +83,7 @@ class SpecialHalfspace(Halfspace):
 	2. {x: pvec'x \leq pvec'cvec }
 
 	'''
-	def __init__(self,pvec=None,cvec=None,direction='leq'):
+	def __init__(self,pvec=None,cvec=None,direction='leq',rhs=None):
 
 		self.set_direction(direction)
 
