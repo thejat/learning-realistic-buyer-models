@@ -44,7 +44,7 @@ class Buyer(object):
 		obj = cvx.Maximize(utility - price_vec.T*x)
 
 		# constraint set C
-		constraints = [x >= 0, x <= 1]
+		constraints = [cvx.norm(x,2) <= 1]
 
 		# solve
 		prob = cvx.Problem(obj, constraints)
@@ -72,7 +72,7 @@ class Buyer(object):
 		obj = cvx.Maximize(utility - p.T*x + np.inner(p, x_hat))
 
 		# constraint 
-		constraints = [x >= 0, x <= 1]
+		constraints = [cvx.norm(x,2) <= 1]
 
 		# solve
 		prob = cvx.Problem(obj, constraints)

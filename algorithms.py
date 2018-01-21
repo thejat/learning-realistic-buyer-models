@@ -1,8 +1,9 @@
 import numpy as np
 import sys
-import buyers
+import buyers, geometric
 import cvxpy as cvx
 from numpy import linalg as LA
+from scipy import linalg as LA2
 
 np.random.seed(2018)
 
@@ -83,18 +84,31 @@ def s_util_unconstrained(buyer, epsilon):
 	# create the initail uncertainty ellipsoid
 	initial_radius = 0.5
 	A0 = initial_radius * np.eye(no_of_item)
-	E0 = geometric.ellipsoid(ctr = buyer.get_valuation_vector() + c0_offset, shape_mat = A0)
+	E0 = geometric.Ellipsoid(ctr = buyer.get_valuation_vector() + c0_offset, shape_mat = A0)
 	
 	# pick initial bundle
-	w,v = LA.eig(A0)
-	x = v[no_of_item-1] # maximum eigen vector
+	w2,v2 =  LA2.eigh(A0, eigvals=(no_of_item-1,no_of_item-1))  # maximum eigen vector
+	x = v2.ravel()
 
 	ellip = E0
-	for i in range(3):
+
+	for i in range(15):
+		w, v = LA.eig(ellip.get_shape_mat())
+		print "volume = ", ellip.get_volume()
+		print "eigen values = ", w
+		print "eigen vectors = ", v 
+		print "bundle chosen: ", x  
 		our_estimate = learn_value(x, 0.001, buyer)
 		center = ellip.get_center()
 		if (our_estimate <= np.dot(x, center)):
-			
+			halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='leq',rhs=None)
+		else:
+			halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='geq',rhs=np.dot(x,center) - float (4)/50 * cvx.sum_entries(cvx.sqrt(x)) - 2.0 * 0.002)
+		ellip = geometric.get_min_vol_ellipsoid(ellip, halfspace)
+		A = ellip.get_shape_mat()
+		w2,v2 =  LA2.eigh(A, eigvals=(no_of_item-1,no_of_item-1))
+		x = v2.ravel()
+		print "################################################################" 
 
 def pick_bundle(A, tau, dim):
 
@@ -133,25 +147,33 @@ def pick_bundle(A, tau, dim):
 
 	if (prob.status == 'optimal'):
 		print prob.value
+		#print "length = ", len(constraints)
+		#print "dual = ", constraints[len(constraints)-1].dual_value
 		print "lambda = ", lamda.value
-		print "smallest eigen vector = "
-		eigen_vector(A, lamda.value, dim)
+		# print "smallest eigen vector = "
+		#A_prime = A+lamda.value*np.eye(dim)
+		A_prime = A-prob.value
+		
+		print A_prime
+		#print LA.eig(A_prime)
+		#eigen_vector(A_prime, dim)
 
 
 	#else:
 	#	print "optimal does not exist"
 
-def eigen_vector(A, lamda, dim):
+def eigen_vector(A, dim):
 
 	x = cvx.Variable(dim)
 
-	obj = cvx.Minimize(cvx.quad_form(x, A+lamda*np.eye(dim)))
+	obj = cvx.Minimize( cvx.quad_form(x, A) )
 	constraints = []
 
 	prob = cvx.Problem(obj, constraints)
 	prob.solve()
 
-	print prob.status	
+	print prob.status
+	print x.value	
 
 def learn_value(x_hat, tau, buyer):
 	no_of_item = buyer.get_no_of_item()
@@ -458,6 +480,7 @@ if __name__ == '__main__':
 	# debugging s_util_unconstrained
 	no_of_item = 4
 	buyer = buyers.Buyer(no_of_item = no_of_item)
+
 	#x_hat = np.array([0.01144068, 0.28162135, 1.0, 0.07832548])
 	#learn_value(x_hat, 0.001, buyer)
 
@@ -465,12 +488,12 @@ if __name__ == '__main__':
 	# A[3,3] = 0.8
 	# A[1,1] = 0.6
 	# A[2,2] = 0.7
-	#A = np.array([[1,7,3], [7,4,-5], [3, -5, 6]])
-	#print A
-	#print "Min eigen value:"
-	#w,v = LA.eig(A)
-	#print w
-	#pick_bundle(A, 0.01, 3)
+	A = np.array([[1,7,3], [7,4,-5], [3, -5, 6]])
+	print A
+	print "Min eigen value:"
+	w,v = LA.eig(A)
+	print w
+	pick_bundle(A, 0.01, 3)
 	
 	# p = 0.67 * np.ones(no_of_item)
 	# output = buyer.get_gp(p, x_hat)

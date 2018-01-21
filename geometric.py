@@ -90,7 +90,8 @@ class SpecialHalfspace(Halfspace):
 		if pvec is not None and cvec is not None:
 			self.set_pvec(pvec)
 			self.set_cvec(cvec)
-			rhs = np.dot(cvec,pvec)
+			if rhs is None:
+				rhs = np.dot(cvec,pvec)
 			normal = pvec
 			# if direction=='geq':
 			# 	normal = -normal

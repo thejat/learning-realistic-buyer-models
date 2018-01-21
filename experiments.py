@@ -46,22 +46,24 @@ def illustrate_learning_unconstrained_buyer(params):
 	#Model
 	buyer = buyers.Buyer(no_of_item=no_of_item)
 
-	algorithms
+	print "valuation = ", buyer.get_valuation_vector()
+
+	algorithms.s_util_unconstrained(buyer, epsilon=0.01)
 
 
 if __name__ == '__main__':
 	np.random.seed(2018)
 	params = {}
-	params['no_of_item'] = 3
+	params['no_of_item'] = 4
 
 	# # Sec 4 (realistic)
-	# illustrate_learning_unconstrained_buyer(params)
+	illustrate_learning_unconstrained_buyer(params)
 
 	# # Sec 5 (realistic)
 	# illustrate_learning_preference_buyer(params)
 
 	# # Sec 6 (unrealistic case)
-	illustrate_learning_constrained_buyer(params)
+	#illustrate_learning_constrained_buyer(params)
 
 	# # Sec 6 (realistic case)
 	# params['realistic_price_set'] = data.get_realistic_prices_synthetic(params['no_of_item'])
