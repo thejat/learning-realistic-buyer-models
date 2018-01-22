@@ -23,6 +23,7 @@ class Buyer(object):
 			while self.utility_coeffs_linear[k]==0:
 				self.utility_coeffs_linear[k] = np.random.randint(2**self.bit_length)*1.0/(2**self.bit_length)
 		#self.utility_coeffs_linear = self.utility_coeffs_linear/np.sum(self.utility_coeffs_linear)
+		#self.utility_coeffs_linear = np.array([0.875, 0.625, 0.1875, 0.78125, 0.78125])
 
 	# returns the optimal bundle bought
 	def get_unconstrained_bundle(self, price_vec):
@@ -251,20 +252,29 @@ if __name__=='__main__':
 	# 	print b.sample_a_list()
 
 	##debugging UnconstrainedBuyer
-	no_of_item = 4
-	b = Buyer(no_of_item = no_of_item)
+	#no_of_item = 4
+	#b = Buyer(no_of_item = no_of_item)
 	# print "valuation vector: ", b.get_valuation_vector()
 	# price_vec = np.random.rand(no_of_item)
 	# print "price vector: ", price_vec
 	# x = b.get_unconstrained_bundle(price_vec)
 	# print "optimal bundle: ", x
-	x_hat = np.array([0.01144068, 0.28162135, 1.0, 0.07832548])
+	#x_hat = np.array([0.01144068, 0.28162135, 1.0, 0.07832548])
 	#p = 0.67 * np.ones(no_of_item)
 	#print b.get_gp1(p, x_hat)
 
-	OPT, x, p = b.primal(x_hat)
-	print "x_hat = ", x_hat
-	print "PRIMAL OPT = ", OPT, "PRIMAL SOLUTION = ", x
-	print "DUAL OPT = ", b.get_gp(p, x_hat), "DUAL SOLUTION = ", p
-	some_p = 0.67 * np.ones(no_of_item)
-	print "DUAL VALUE AT", "p = ", some_p, " is ", b.get_gp(some_p, x_hat)
+	#OPT, x, p = b.primal(x_hat)
+	# print "x_hat = ", x_hat
+	# print "PRIMAL OPT = ", OPT, "PRIMAL SOLUTION = ", x
+	# print "DUAL OPT = ", b.get_gp(p, x_hat), "DUAL SOLUTION = ", p
+	# some_p = 0.67 * np.ones(no_of_item)
+	# print "DUAL VALUE AT", "p = ", some_p, " is ", b.get_gp(some_p, x_hat)
+
+
+	no_of_item = 5
+	b = Buyer(no_of_item = no_of_item)
+	print "valuation vector: ", b.get_valuation_vector()
+	price_vec = np.array([1.20763323, 0.9658937, 0.72521685, 1.11564777, 0.54367126])
+	print "price vector: ", price_vec
+	x = b.get_unconstrained_bundle(price_vec)
+	print x

@@ -92,14 +92,18 @@ def s_util_unconstrained(buyer, epsilon):
 
 	ellip = E0
 
-	for i in range(15):
-		w, v = LA.eig(ellip.get_shape_mat())
-		print "volume = ", ellip.get_volume()
-		print "eigen values = ", w
-		print "eigen vectors = ", v 
-		print "bundle chosen: ", x  
-		our_estimate = learn_value(x, 0.001, buyer)
+	error_at_iter = np.zeros(3)
+	for i in range(3):
 		center = ellip.get_center()
+
+		#w, v = LA.eig(ellip.get_shape_mat())
+		error_at_iter[i] = LA.norm(buyer.get_valuation_vector() - center, 2)/LA.norm(buyer.get_valuation_vector(),2)
+		print "volume = ", ellip.get_volume(), "maximum eigen value = ", w2[0], "error = ", error_at_iter[i]  
+		#print "eigen values = ", w
+		#print "eigen vectors = ", v 
+		#print "bundle chosen: ", x  
+		
+		our_estimate = learn_value(x, 0.001, buyer)
 		if (our_estimate <= np.dot(x, center)):
 			halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='leq',rhs=None)
 		else:
@@ -108,7 +112,8 @@ def s_util_unconstrained(buyer, epsilon):
 		A = ellip.get_shape_mat()
 		w2,v2 =  LA2.eigh(A, eigvals=(no_of_item-1,no_of_item-1))
 		x = v2.ravel()
-		print "################################################################" 
+		#print "################################################################" 
+	return error_at_iter	
 
 def pick_bundle(A, tau, dim):
 
@@ -188,7 +193,10 @@ def learn_value(x_hat, tau, buyer):
 	our_estimate = buyer.get_gp(p[1], x_hat)
 	
 	for t in range(1, T):
+		#print "price=",p[t]
 		x_star = buyer.get_unconstrained_bundle(p[t])
+		#if (iter == 2):
+		#	print x_hat, " ", x_star
 		gradient = x_hat - x_star
 		eta = float (1) / (T * LA.norm(gradient))
 		updated_p = p[t] - eta*gradient

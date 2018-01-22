@@ -40,24 +40,27 @@ def illustrate_learning_constrained_buyer(params):
 	# print '\tTruth:', buyer.get_valuation_vector()
 
 def illustrate_learning_unconstrained_buyer(params):
+	
+	plot_matrix = np.zeros((50,3))
+
 	#Local
-	no_of_item = params['no_of_item']
+	#no_of_item = params['no_of_item']
+	no_of_item = 5
 
-	#Model
-	buyer = buyers.Buyer(no_of_item=no_of_item)
-
-	print "valuation = ", buyer.get_valuation_vector()
-
-	algorithms.s_util_unconstrained(buyer, epsilon=0.01)
-
+	for i in range(2):
+		buyer = buyers.Buyer(no_of_item=no_of_item)
+		print "valuation = ", buyer.get_valuation_vector()
+		algorithms.s_util_unconstrained(buyer, epsilon=0.01)	
+	#print plot_matrix[0]				
 
 if __name__ == '__main__':
 	np.random.seed(2018)
 	params = {}
-	params['no_of_item'] = 4
+	params['no_of_item'] = 5
 
 	# # Sec 4 (realistic)
 	illustrate_learning_unconstrained_buyer(params)
+	#illustrate_learning_unconstrained_buyer(params)
 
 	# # Sec 5 (realistic)
 	# illustrate_learning_preference_buyer(params)
