@@ -27,6 +27,9 @@ class Buyer(object):
 
 	# returns the optimal bundle bought
 	def get_unconstrained_bundle(self, price_vec):
+		#print "(inside) price vector = ", price_vec
+		#print "(inside) buyer's valuation = ", self.get_valuation_vector()
+		
 		# pertubation constant
 		mu = 50
 		

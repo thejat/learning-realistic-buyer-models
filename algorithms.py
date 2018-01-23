@@ -92,8 +92,8 @@ def s_util_unconstrained(buyer, epsilon):
 
 	ellip = E0
 
-	error_at_iter = np.zeros(3)
-	for i in range(3):
+	error_at_iter = np.zeros(2)
+	for i in range(2):
 		center = ellip.get_center()
 
 		#w, v = LA.eig(ellip.get_shape_mat())
@@ -194,7 +194,9 @@ def learn_value(x_hat, tau, buyer):
 	
 	for t in range(1, T):
 		#print "price=",p[t]
-		x_star = buyer.get_unconstrained_bundle(p[t])
+		roundedPrices = [ round(elem, 6) for elem in p[t] ]
+		roundedPrices = np.array(roundedPrices)
+		x_star = buyer.get_unconstrained_bundle(roundedPrices)
 		if (x_star is not np.nan):
 			gradient = x_hat - x_star#	print x_hat, " ", x_star
 		else:

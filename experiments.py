@@ -41,13 +41,13 @@ def illustrate_learning_constrained_buyer(params):
 
 def illustrate_learning_unconstrained_buyer(params):
 	
-	plot_matrix = np.zeros((50,3))
+	plot_matrix = np.zeros((50,2))
 
 	#Local
 	#no_of_item = params['no_of_item']
 	no_of_item = 5
 
-	for i in range(2):
+	for i in range(7):
 		buyer = buyers.Buyer(no_of_item=no_of_item)
 		print "valuation = ", buyer.get_valuation_vector()
 		algorithms.s_util_unconstrained(buyer, epsilon=0.01)	
