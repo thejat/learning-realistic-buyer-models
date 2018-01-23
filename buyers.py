@@ -58,7 +58,7 @@ class Buyer(object):
 			return np.array(x.value).ravel()
 
 		else:
-			return prob.status, np.nan, np.nan	
+			return np.nan	
 
 	def get_gp(self, p, x_hat):
 		# variable

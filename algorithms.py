@@ -195,9 +195,12 @@ def learn_value(x_hat, tau, buyer):
 	for t in range(1, T):
 		#print "price=",p[t]
 		x_star = buyer.get_unconstrained_bundle(p[t])
-		#if (iter == 2):
-		#	print x_hat, " ", x_star
-		gradient = x_hat - x_star
+		if (x_star is not np.nan):
+			gradient = x_hat - x_star#	print x_hat, " ", x_star
+		else:
+			print "price which causes problem = ", p[t]
+			gradient = x_hat - x_star 
+		
 		eta = float (1) / (T * LA.norm(gradient))
 		updated_p = p[t] - eta*gradient
 		proj = projection(updated_p, no_of_item)
