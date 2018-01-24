@@ -98,22 +98,28 @@ def s_util_unconstrained(number_of_iter, buyer, epsilon):
 
 		#w, v = LA.eig(ellip.get_shape_mat())
 		#print "c=",center, "  a*=", buyer.get_valuation_vector()
+		print "shape A =", ellip.get_shape_mat()
 		error_at_iter[i] = LA.norm(buyer.get_valuation_vector() - center, 2)/LA.norm(buyer.get_valuation_vector(),2)
 		print "volume = ", ellip.get_volume(), "maximum eigen value = ", w2[0], "error = ", error_at_iter[i], "  c=",center, "  a*=", buyer.get_valuation_vector(), "  member:", ellip.get_membership(buyer.get_valuation_vector())   
 		#print "eigen values = ", w
 		#print "eigen vectors = ", v 
 		#print "bundle chosen: ", x  
-		
+		print "-------------------------------------------------------------------------------------------------------------------------"
+		print "inner loop running......."
 		our_estimate = learn_value(x, 0.001, buyer)
+		print "our utility estimate = ", our_estimate
+
 		if (our_estimate <= np.dot(x, center)):
+			print "hyperplane : first kind (less): ", " x=", x, " center =", center, " rhs=", np.dot(x,center)
 			halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='leq',rhs=None)
 		else:
-			halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='geq',rhs=np.dot(x,center) - float (4)/50 * cvx.sum_entries(cvx.sqrt(x)) - 2.0 * 0.002)
+			print "hyperplane : second kind (greater): ", " x=", x, " center =", center, " rhs=", np.dot(x,center) - float (4)/50 * np.sum(np.sqrt(x)) - 2.0 * 0.002
+			halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='geq',rhs=np.dot(x,center) - float (4)/50 * np.sum(np.sqrt(x)) - 2.0 * 0.002)
 		ellip = geometric.get_min_vol_ellipsoid(ellip, halfspace)
 		A = ellip.get_shape_mat()
 		w2,v2 =  LA2.eigh(A, eigvals=(no_of_item-1,no_of_item-1))
 		x = v2.ravel()
-		#print "################################################################" 
+		 
 	return error_at_iter	
 
 def pick_bundle(A, tau, dim):

@@ -45,7 +45,7 @@ def illustrate_learning_constrained_buyer(params):
 
 def illustrate_learning_unconstrained_buyer(params):
 	
-	number_of_simulations = 2
+	number_of_simulations = 1
 	number_of_iterations_per_simulation = 50
 	plot_matrix = np.zeros((number_of_simulations,number_of_iterations_per_simulation)) # number of different a's times numer of iterations
 
@@ -56,7 +56,7 @@ def illustrate_learning_unconstrained_buyer(params):
 		print "valuation = ", buyer.get_valuation_vector()
 		plot_matrix[i] = algorithms.s_util_unconstrained(number_of_iterations_per_simulation, buyer, epsilon=0.01)	
 	#print plot_matrix[0]	
-	get_plot_subroutine(plot_matrix)
+	#get_plot_subroutine(plot_matrix)
 	
 def get_plot_subroutine(plot_matrix):
 	
