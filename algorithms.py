@@ -75,7 +75,7 @@ def set_prices(L, no_of_item, list_of_valuation_range):
 	
 	return price_vec
 
-def s_util_unconstrained(buyer, epsilon):
+def s_util_unconstrained(number_of_iter, buyer, epsilon):
 	
 	no_of_item = buyer.get_no_of_item()
 
@@ -92,13 +92,14 @@ def s_util_unconstrained(buyer, epsilon):
 
 	ellip = E0
 
-	error_at_iter = np.zeros(2)
-	for i in range(2):
+	error_at_iter = np.zeros(number_of_iter)
+	for i in range(number_of_iter):
 		center = ellip.get_center()
 
 		#w, v = LA.eig(ellip.get_shape_mat())
+		#print "c=",center, "  a*=", buyer.get_valuation_vector()
 		error_at_iter[i] = LA.norm(buyer.get_valuation_vector() - center, 2)/LA.norm(buyer.get_valuation_vector(),2)
-		print "volume = ", ellip.get_volume(), "maximum eigen value = ", w2[0], "error = ", error_at_iter[i]  
+		print "volume = ", ellip.get_volume(), "maximum eigen value = ", w2[0], "error = ", error_at_iter[i], "  c=",center, "  a*=", buyer.get_valuation_vector(), "  member:", ellip.get_membership(buyer.get_valuation_vector())   
 		#print "eigen values = ", w
 		#print "eigen vectors = ", v 
 		#print "bundle chosen: ", x  

@@ -1,6 +1,10 @@
 import numpy as np
 import time, pickle, datetime, copy, collections
 import buyers, algorithms, data, geometric
+#import matplotlib
+#matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import matplotlib.colors as colors
 
 def illustrate_learning_preference_buyer(params):
 	# Local
@@ -41,17 +45,32 @@ def illustrate_learning_constrained_buyer(params):
 
 def illustrate_learning_unconstrained_buyer(params):
 	
-	plot_matrix = np.zeros((50,2))
+	number_of_simulations = 2
+	number_of_iterations_per_simulation = 50
+	plot_matrix = np.zeros((number_of_simulations,number_of_iterations_per_simulation)) # number of different a's times numer of iterations
 
-	#Local
-	#no_of_item = params['no_of_item']
-	no_of_item = 5
+	no_of_item = 3
 
-	for i in range(7):
+	for i in range(number_of_simulations):
 		buyer = buyers.Buyer(no_of_item=no_of_item)
 		print "valuation = ", buyer.get_valuation_vector()
-		algorithms.s_util_unconstrained(buyer, epsilon=0.01)	
-	#print plot_matrix[0]				
+		plot_matrix[i] = algorithms.s_util_unconstrained(number_of_iterations_per_simulation, buyer, epsilon=0.01)	
+	#print plot_matrix[0]	
+	get_plot_subroutine(plot_matrix)
+	
+def get_plot_subroutine(plot_matrix):
+	
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+	xs = np.arange(len(plot_matrix[0]))
+	print xs
+	#ys_lb = np.asarray(   [np.percentile(plot_matrix[i,:],25)  for i in range(len(xs)) ]   )
+	#ys_ub = np.asarray(   [np.percentile(plot_matrix[i,:],75)  for i in range(len(xs)) ]   )
+	#ax.fill_between(xs, ys_lb, ys_ub, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
+
+	ys = np.asarray(  [np.mean(plot_matrix[i,:]) for i in range(len(xs))]    )
+	ax.plot(xs,ys)
+	plt.show()		
 
 if __name__ == '__main__':
 	np.random.seed(2018)
