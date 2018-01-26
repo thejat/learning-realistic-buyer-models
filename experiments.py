@@ -45,8 +45,8 @@ def illustrate_learning_constrained_buyer(params):
 
 def illustrate_learning_unconstrained_buyer(params):
 	
-	number_of_simulations = 1
-	number_of_iterations_per_simulation = 100
+	number_of_simulations = 3
+	number_of_iterations_per_simulation = 6
 	plot_matrix = np.zeros((number_of_simulations,number_of_iterations_per_simulation)) # number of different a's times numer of iterations
 
 	no_of_item = 2
@@ -56,7 +56,7 @@ def illustrate_learning_unconstrained_buyer(params):
 		print "valuation = ", buyer.get_valuation_vector()
 		plot_matrix[i] = algorithms.s_util_unconstrained(number_of_iterations_per_simulation, buyer, epsilon=0.01)	
 	#print plot_matrix[0]	
-	#get_plot_subroutine(plot_matrix)
+	get_plot_subroutine(plot_matrix)
 	
 def get_plot_subroutine(plot_matrix):
 	
@@ -64,11 +64,11 @@ def get_plot_subroutine(plot_matrix):
 	ax = fig.add_subplot(111)
 	xs = np.arange(len(plot_matrix[0]))
 	print xs
-	#ys_lb = np.asarray(   [np.percentile(plot_matrix[i,:],25)  for i in range(len(xs)) ]   )
-	#ys_ub = np.asarray(   [np.percentile(plot_matrix[i,:],75)  for i in range(len(xs)) ]   )
-	#ax.fill_between(xs, ys_lb, ys_ub, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
+	# ys_lb = np.asarray(   [np.percentile(plot_matrix[i,:],25)  for i in range(len(xs)) ]   )
+	# ys_ub = np.asarray(   [np.percentile(plot_matrix[i,:],75)  for i in range(len(xs)) ]   )
+	# ax.fill_between(xs, ys_lb, ys_ub, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
 
-	ys = np.asarray(  [np.mean(plot_matrix[i,:]) for i in range(len(xs))]    )
+	ys = np.asarray(  [np.mean(plot_matrix[i]) for i in range(len(xs))]    )
 	ax.plot(xs,ys)
 	plt.show()		
 
@@ -78,7 +78,7 @@ if __name__ == '__main__':
 	params['no_of_item'] = 5
 
 	# # Sec 4 (realistic)
-	illustrate_learning_unconstrained_buyer(params)
+	# illustrate_learning_unconstrained_buyer(params) #####
 	#illustrate_learning_unconstrained_buyer(params)
 
 	# # Sec 5 (realistic)
@@ -93,3 +93,31 @@ if __name__ == '__main__':
 
 	# # Sec 7 (unrealistic and realistic)
 	# illustrate_learning_stock_sensitive_buyer(params)
+
+
+
+
+
+	number_of_simulations = 1
+	number_of_iterations_per_simulation = 30
+	plot_matrix = np.zeros((number_of_simulations,number_of_iterations_per_simulation)) # number of different a's times numer of iterations
+
+	no_of_item = 2
+
+	for i in range(number_of_simulations):
+		buyer = buyers.Buyer(no_of_item=no_of_item)
+		print "valuation = ", buyer.get_valuation_vector()
+		plot_matrix[i] = algorithms.s_util_unconstrained(number_of_iterations_per_simulation, buyer, epsilon=0.01)	
+
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+	xs = np.arange(len(plot_matrix[0]))
+	print xs
+	ys_lb = np.asarray(   [np.percentile(plot_matrix[:,i],25)  for i in range(len(xs)) ]   )
+	ys_ub = np.asarray(   [np.percentile(plot_matrix[:,i],75)  for i in range(len(xs)) ]   )
+	ax.fill_between(xs, ys_lb, ys_ub, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
+
+	ys = np.asarray(  [np.mean(plot_matrix[:,i]) for i in range(len(xs))]    )
+	ax.plot(xs,ys)
+	plt.show()

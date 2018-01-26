@@ -179,7 +179,10 @@ def get_min_vol_ellipsoid2(ellipsoid,halfspace):
 		
 	if (alpha >= -1.0/n and alpha <= 1):
 		print "ellipsoid changes after intersection"
-		new_c = c - b*1.0*(1+n*alpha)/(n+1)
+		if direction == 'geq':
+			new_c = c + b*1.0*(1+n*alpha)/(n+1)
+		else:
+			new_c = c - b*1.0*(1+n*alpha)/(n+1)
 		new_A = (  (n**2) * 1.0 * (1-(alpha**2)) / ((n**2)-1)  )   *   (  A - (2.0*(1+n*alpha)/((n+1)*(1+alpha))) * np.outer(b,b)  )
 		print "old shape mat =",A
 		print "old center =",c
