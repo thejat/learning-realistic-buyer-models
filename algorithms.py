@@ -106,18 +106,21 @@ def s_util_unconstrained(number_of_iter, buyer, epsilon):
 		#print "bundle chosen: ", x  
 		print "-------------------------------------------------------------------------------------------------------------------------"
 		print "inner loop running......."
-		our_estimate = learn_value(x, 0.001, buyer)
-		deficit = our_estimate - np.dot(buyer.get_valuation_vector(),x)
-		print "our utility estimate = ", our_estimate
+		# (real inner loop) our_estimate = learn_value(x, 0.001, buyer)
+		our_estimate2 = np.dot(x,buyer.get_valuation_vector())
+		# (real )deficit = our_estimate - np.dot(buyer.get_valuation_vector(),x)
+		print "our utility estimate = ", our_estimate2
 
-		if (our_estimate <= np.dot(x, center)):
+		if (our_estimate2 <= np.dot(x, center)):
 			print "hyperplane : first kind (less): ", " x=", x, " center =", center, " rhs=", np.dot(x,center)
 			halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='leq',rhs=None)
 		else:
 			#print "hyperplane : second kind (greater): ", " x=", x, " center =", center, " rhs=", np.dot(x,center) - float (4)/50 * np.sum(np.sqrt(x)) - 2.0 * 0.002
-			print "hyperplane : second kind (greater): ", " x=",x, " center=",center, " rhs=", np.dot(x,center)-deficit
+			# (real) print "hyperplane : second kind (greater): ", " x=",x, " center=",center, " rhs=", np.dot(x,center)-deficit
+			print "hyperplane : second kind (greater): ", " x=",x, " center=",center, " rhs=", np.dot(x,center)
 			#halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='geq',rhs=np.dot(x,center) - float (4)/50 * np.sum(np.sqrt(x)) - 2.0 * 0.002)
-			halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='geq',rhs=np.dot(x,center)-deficit)
+			# (real) halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='geq',rhs=np.dot(x,center)-deficit)
+			halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='geq',rhs=np.dot(x,center))
 		ellip = geometric.get_min_vol_ellipsoid2(ellip, halfspace)
 		A = ellip.get_shape_mat()
 		w2,v2 =  LA2.eigh(A, eigvals=(no_of_item-1,no_of_item-1))

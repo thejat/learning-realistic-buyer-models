@@ -45,11 +45,11 @@ def illustrate_learning_constrained_buyer(params):
 
 def illustrate_learning_unconstrained_buyer(params):
 	
-	number_of_simulations = 3
-	number_of_iterations_per_simulation = 6
+	number_of_simulations = 50
+	number_of_iterations_per_simulation = 1000
 	plot_matrix = np.zeros((number_of_simulations,number_of_iterations_per_simulation)) # number of different a's times numer of iterations
 
-	no_of_item = 2
+	no_of_item = 10000
 
 	for i in range(number_of_simulations):
 		buyer = buyers.Buyer(no_of_item=no_of_item)
@@ -98,11 +98,11 @@ if __name__ == '__main__':
 
 
 
-	number_of_simulations = 1
-	number_of_iterations_per_simulation = 30
+	number_of_simulations = 25
+	number_of_iterations_per_simulation = 400
 	plot_matrix = np.zeros((number_of_simulations,number_of_iterations_per_simulation)) # number of different a's times numer of iterations
 
-	no_of_item = 2
+	no_of_item = 5
 
 	for i in range(number_of_simulations):
 		buyer = buyers.Buyer(no_of_item=no_of_item)
@@ -110,6 +110,7 @@ if __name__ == '__main__':
 		plot_matrix[i] = algorithms.s_util_unconstrained(number_of_iterations_per_simulation, buyer, epsilon=0.01)	
 
 
+	np.savetxt("plot.csv", plot_matrix, delimiter=",")
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 	xs = np.arange(len(plot_matrix[0]))
