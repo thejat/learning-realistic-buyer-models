@@ -23,7 +23,7 @@ class Buyer(object):
 			while self.utility_coeffs_linear[k]==0:
 				self.utility_coeffs_linear[k] = np.random.randint(2**self.bit_length)*1.0/(2**self.bit_length)
 		#self.utility_coeffs_linear = self.utility_coeffs_linear/np.sum(self.utility_coeffs_linear)
-		#self.utility_coeffs_linear = np.array([0.875, 0.625, 0.1875, 0.78125, 0.78125])
+		#self.utility_coeffs_linear = np.array([0.8125,0.1875])
 
 	# returns the optimal bundle bought
 	def get_unconstrained_bundle(self, price_vec):

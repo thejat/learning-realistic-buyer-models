@@ -143,6 +143,57 @@ def get_min_vol_ellipsoid(ellipsoid,halfpsace):
 
 	new_A = ((n**2)*1.0/((n**2)-1))*(A - (2.0/(n+1))*np.outer(b,b))
 
+	print "new shape mat = ", new_A
+
+	return Ellipsoid(ctr=new_c,shape_mat=new_A)
+
+def get_min_vol_ellipsoid2(ellipsoid,halfspace):
+
+	print "****************came inside get min vol ellipsoid*************"
+	if ellipsoid.get_dimension() != halfspace.get_dimension():
+		print "Dimension error!"
+		return Ellipsoid()
+	n = ellipsoid.get_dimension()
+	A = ellipsoid.get_shape_mat()
+	c = ellipsoid.get_center()
+	p = halfspace.get_pvec()
+	gamma = halfspace.get_rhs()
+	direction = halfspace.get_direction()
+	b = np.dot(A,p)*1.0/np.sqrt(np.dot(p,np.dot(A,p)))
+
+	if direction == 'geq':
+		p = -p
+		gamma = -gamma
+	alpha = (np.dot(p,c)- gamma) * 1.0 / np.sqrt(np.dot(p,np.dot(A,p))) 
+	print "alpha = ", alpha
+
+	if (alpha >= -1 and alpha <= 1):
+		print "hyperplane intersects ellipsoid"
+	else:
+		print "hyperplane doesnot intersect ellipsoid"
+
+	if (alpha >= -1 and alpha <= -1.0/n):
+		print "ellipsoid unchanged"
+		new_c = c
+		new_A = A
+		
+	if (alpha >= -1.0/n and alpha <= 1):
+		print "ellipsoid changes after intersection"
+		new_c = c - b*1.0*(1+n*alpha)/(n+1)
+		new_A = (  (n**2) * 1.0 * (1-(alpha**2)) / ((n**2)-1)  )   *   (  A - (2.0*(1+n*alpha)/((n+1)*(1+alpha))) * np.outer(b,b)  )
+		print "old shape mat =",A
+		print "old center =",c
+		print "hyperplane: x =", p
+		print "hyperplane: rhs=", gamma
+		print "hyperplane: sign", direction
+		print "alpha=",alpha
+		print "b=",b
+		print "new c=", new_c
+		print "new_A=",new_A
+	
+	#print "new shape mat = ", new_A
+	
+	print "*****************leaving.......*************************"
 	return Ellipsoid(ctr=new_c,shape_mat=new_A)
 
 def get_ellipsoid_intersect_hyperplane(ellipsoid,hyperplane):

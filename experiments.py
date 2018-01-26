@@ -46,10 +46,10 @@ def illustrate_learning_constrained_buyer(params):
 def illustrate_learning_unconstrained_buyer(params):
 	
 	number_of_simulations = 1
-	number_of_iterations_per_simulation = 50
+	number_of_iterations_per_simulation = 100
 	plot_matrix = np.zeros((number_of_simulations,number_of_iterations_per_simulation)) # number of different a's times numer of iterations
 
-	no_of_item = 3
+	no_of_item = 2
 
 	for i in range(number_of_simulations):
 		buyer = buyers.Buyer(no_of_item=no_of_item)

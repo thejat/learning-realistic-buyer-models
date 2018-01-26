@@ -98,7 +98,7 @@ def s_util_unconstrained(number_of_iter, buyer, epsilon):
 
 		#w, v = LA.eig(ellip.get_shape_mat())
 		#print "c=",center, "  a*=", buyer.get_valuation_vector()
-		print "shape A =", ellip.get_shape_mat()
+		#print "shape A =", ellip.get_shape_mat()
 		error_at_iter[i] = LA.norm(buyer.get_valuation_vector() - center, 2)/LA.norm(buyer.get_valuation_vector(),2)
 		print "volume = ", ellip.get_volume(), "maximum eigen value = ", w2[0], "error = ", error_at_iter[i], "  c=",center, "  a*=", buyer.get_valuation_vector(), "  member:", ellip.get_membership(buyer.get_valuation_vector())   
 		#print "eigen values = ", w
@@ -107,15 +107,18 @@ def s_util_unconstrained(number_of_iter, buyer, epsilon):
 		print "-------------------------------------------------------------------------------------------------------------------------"
 		print "inner loop running......."
 		our_estimate = learn_value(x, 0.001, buyer)
+		deficit = our_estimate - np.dot(buyer.get_valuation_vector(),x)
 		print "our utility estimate = ", our_estimate
 
 		if (our_estimate <= np.dot(x, center)):
 			print "hyperplane : first kind (less): ", " x=", x, " center =", center, " rhs=", np.dot(x,center)
 			halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='leq',rhs=None)
 		else:
-			print "hyperplane : second kind (greater): ", " x=", x, " center =", center, " rhs=", np.dot(x,center) - float (4)/50 * np.sum(np.sqrt(x)) - 2.0 * 0.002
-			halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='geq',rhs=np.dot(x,center) - float (4)/50 * np.sum(np.sqrt(x)) - 2.0 * 0.002)
-		ellip = geometric.get_min_vol_ellipsoid(ellip, halfspace)
+			#print "hyperplane : second kind (greater): ", " x=", x, " center =", center, " rhs=", np.dot(x,center) - float (4)/50 * np.sum(np.sqrt(x)) - 2.0 * 0.002
+			print "hyperplane : second kind (greater): ", " x=",x, " center=",center, " rhs=", np.dot(x,center)-deficit
+			#halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='geq',rhs=np.dot(x,center) - float (4)/50 * np.sum(np.sqrt(x)) - 2.0 * 0.002)
+			halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='geq',rhs=np.dot(x,center)-deficit)
+		ellip = geometric.get_min_vol_ellipsoid2(ellip, halfspace)
 		A = ellip.get_shape_mat()
 		w2,v2 =  LA2.eigh(A, eigvals=(no_of_item-1,no_of_item-1))
 		x = v2.ravel()
@@ -203,6 +206,7 @@ def learn_value(x_hat, tau, buyer):
 		#print "price=",p[t]
 		roundedPrices = [ round(elem, 6) for elem in p[t] ]
 		roundedPrices = np.array(roundedPrices)
+		#x_star = buyer.get_unconstrained_bundle(p[t])
 		x_star = buyer.get_unconstrained_bundle(roundedPrices)
 		if (x_star is not np.nan):
 			gradient = x_hat - x_star#	print x_hat, " ", x_star
@@ -498,8 +502,11 @@ if __name__ == '__main__':
 	# p_ij_best1,p_bar_best1,ij_best1 = get_best_price_from_candidate_prices(no_of_item,budget,bit_length,Elist[1])
 
 	# debugging s_util_unconstrained
-	no_of_item = 4
+	no_of_item = 2
 	buyer = buyers.Buyer(no_of_item = no_of_item)
+	print "valuation = ", buyer.get_valuation_vector()
+	print "bundle = ", np.array([0,1])
+	print "our estimate = ", learn_value(np.array([0,1]), 0.001, buyer)
 
 	#x_hat = np.array([0.01144068, 0.28162135, 1.0, 0.07832548])
 	#learn_value(x_hat, 0.001, buyer)
@@ -508,12 +515,12 @@ if __name__ == '__main__':
 	# A[3,3] = 0.8
 	# A[1,1] = 0.6
 	# A[2,2] = 0.7
-	A = np.array([[1,7,3], [7,4,-5], [3, -5, 6]])
-	print A
-	print "Min eigen value:"
-	w,v = LA.eig(A)
-	print w
-	pick_bundle(A, 0.01, 3)
+	#A = np.array([[1,7,3], [7,4,-5], [3, -5, 6]])
+	#print A
+	#print "Min eigen value:"
+	#w,v = LA.eig(A)
+	#print w
+	#pick_bundle(A, 0.01, 3)
 	
 	# p = 0.67 * np.ones(no_of_item)
 	# output = buyer.get_gp(p, x_hat)
