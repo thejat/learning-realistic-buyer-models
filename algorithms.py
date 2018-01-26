@@ -180,6 +180,65 @@ def pick_bundle(A, tau, dim):
 	#else:
 	#	print "optimal does not exist"
 
+def s_util_unconstrained2(buyer, epsilon):
+	
+	no_of_item = buyer.get_no_of_item()
+
+	c0_offset = np.zeros(no_of_item)
+
+	# create the initail uncertainty ellipsoid
+	initial_radius = 0.5
+	A0 = initial_radius * np.eye(no_of_item)
+	E0 = geometric.Ellipsoid(ctr = buyer.get_valuation_vector() + c0_offset, shape_mat = A0)
+	
+	# pick initial bundle
+	w2,v2 =  LA2.eigh(A0, eigvals=(no_of_item-1,no_of_item-1))  # maximum eigen vector
+	x = v2.ravel()
+
+	ellip = E0
+
+	#error_at_iter = np.zeros(number_of_iter)
+	
+	iter_counter = 0
+	error = 10
+	while error>=0.001 or iter_counter <= 5 :
+
+		iter_counter=iter_counter+1
+		center = ellip.get_center()
+
+		#w, v = LA.eig(ellip.get_shape_mat())
+		#print "c=",center, "  a*=", buyer.get_valuation_vector()
+		#print "shape A =", ellip.get_shape_mat()
+		#error_at_iter[i] = LA.norm(buyer.get_valuation_vector() - center, 2)/LA.norm(buyer.get_valuation_vector(),2)
+		error = LA.norm(buyer.get_valuation_vector() - center, 2)/LA.norm(buyer.get_valuation_vector(),2)
+		print "volume = ", ellip.get_volume(), "maximum eigen value = ", w2[0], "error = ", error, "  c=",center, "  a*=", buyer.get_valuation_vector(), "  member:", ellip.get_membership(buyer.get_valuation_vector())   
+		#print "eigen values = ", w
+		#print "eigen vectors = ", v 
+		#print "bundle chosen: ", x  
+		print "-------------------------------------------------------------------------------------------------------------------------"
+		print "inner loop running......."
+		# (real inner loop) our_estimate = learn_value(x, 0.001, buyer)
+		our_estimate2 = np.dot(x,buyer.get_valuation_vector())
+		# (real )deficit = our_estimate - np.dot(buyer.get_valuation_vector(),x)
+		print "our utility estimate = ", our_estimate2
+
+		if (our_estimate2 <= np.dot(x, center)):
+			print "hyperplane : first kind (less): ", " x=", x, " center =", center, " rhs=", np.dot(x,center)
+			halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='leq',rhs=None)
+		else:
+			#print "hyperplane : second kind (greater): ", " x=", x, " center =", center, " rhs=", np.dot(x,center) - float (4)/50 * np.sum(np.sqrt(x)) - 2.0 * 0.002
+			# (real) print "hyperplane : second kind (greater): ", " x=",x, " center=",center, " rhs=", np.dot(x,center)-deficit
+			print "hyperplane : second kind (greater): ", " x=",x, " center=",center, " rhs=", np.dot(x,center)
+			#halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='geq',rhs=np.dot(x,center) - float (4)/50 * np.sum(np.sqrt(x)) - 2.0 * 0.002)
+			# (real) halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='geq',rhs=np.dot(x,center)-deficit)
+			halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='geq',rhs=np.dot(x,center))
+		ellip = geometric.get_min_vol_ellipsoid2(ellip, halfspace)
+		A = ellip.get_shape_mat()
+		w2,v2 =  LA2.eigh(A, eigvals=(no_of_item-1,no_of_item-1))
+		x = v2.ravel()
+		 
+	return iter_counter
+
 def eigen_vector(A, dim):
 
 	x = cvx.Variable(dim)

@@ -70,7 +70,50 @@ def get_plot_subroutine(plot_matrix):
 
 	ys = np.asarray(  [np.mean(plot_matrix[i]) for i in range(len(xs))]    )
 	ax.plot(xs,ys)
-	plt.show()		
+	plt.show()	
+
+def plot2():
+	N = 18
+	no_of_item_array = [i for i in range(2,N)]
+	no_of_item_array = np.array(no_of_item_array)
+
+	plot_array_yaxis = np.zeros(len(no_of_item_array))
+
+	for i in range(len(no_of_item_array)):
+		buyer = buyers.Buyer(no_of_item=no_of_item_array[i])
+		print "valuation = ", buyer.get_valuation_vector()
+		plot_array_yaxis[i] = algorithms.s_util_unconstrained2(buyer, epsilon = 0.01)
+		
+	fig = plt.figure()
+	ax=fig.add_subplot(111)
+	ax.plot(no_of_item_array, plot_array_yaxis)
+	plt.show()
+
+def plot1():	
+	number_of_simulations = 1
+	number_of_iterations_per_simulation = 1000 
+	plot_matrix = np.zeros((number_of_simulations,number_of_iterations_per_simulation)) # number of different a's times numer of iterations
+
+	no_of_item = 14
+
+	for i in range(number_of_simulations):
+		buyer = buyers.Buyer(no_of_item=no_of_item)
+		print "valuation = ", buyer.get_valuation_vector()
+		plot_matrix[i] = algorithms.s_util_unconstrained(number_of_iterations_per_simulation, buyer, epsilon=0.01)	
+
+
+	np.savetxt("plot1.csv", plot_matrix, delimiter=",")
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+	xs = np.arange(len(plot_matrix[0]))
+	print xs
+	ys_lb = np.asarray(   [np.percentile(plot_matrix[:,i],25)  for i in range(len(xs)) ]   )
+	ys_ub = np.asarray(   [np.percentile(plot_matrix[:,i],75)  for i in range(len(xs)) ]   )
+	ax.fill_between(xs, ys_lb, ys_ub, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
+
+	ys = np.asarray(  [np.mean(plot_matrix[:,i]) for i in range(len(xs))]    )
+	ax.plot(xs,ys)
+	plt.show()
 
 if __name__ == '__main__':
 	np.random.seed(2018)
@@ -93,32 +136,10 @@ if __name__ == '__main__':
 
 	# # Sec 7 (unrealistic and realistic)
 	# illustrate_learning_stock_sensitive_buyer(params)
+	plot1()
+	#plot2()
 
 
 
 
-
-	number_of_simulations = 25
-	number_of_iterations_per_simulation = 400
-	plot_matrix = np.zeros((number_of_simulations,number_of_iterations_per_simulation)) # number of different a's times numer of iterations
-
-	no_of_item = 5
-
-	for i in range(number_of_simulations):
-		buyer = buyers.Buyer(no_of_item=no_of_item)
-		print "valuation = ", buyer.get_valuation_vector()
-		plot_matrix[i] = algorithms.s_util_unconstrained(number_of_iterations_per_simulation, buyer, epsilon=0.01)	
-
-
-	np.savetxt("plot.csv", plot_matrix, delimiter=",")
-	fig = plt.figure()
-	ax = fig.add_subplot(111)
-	xs = np.arange(len(plot_matrix[0]))
-	print xs
-	ys_lb = np.asarray(   [np.percentile(plot_matrix[:,i],25)  for i in range(len(xs)) ]   )
-	ys_ub = np.asarray(   [np.percentile(plot_matrix[:,i],75)  for i in range(len(xs)) ]   )
-	ax.fill_between(xs, ys_lb, ys_ub, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
-
-	ys = np.asarray(  [np.mean(plot_matrix[:,i]) for i in range(len(xs))]    )
-	ax.plot(xs,ys)
-	plt.show()
+	
