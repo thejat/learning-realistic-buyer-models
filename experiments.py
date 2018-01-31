@@ -105,8 +105,40 @@ def plot2():
 	plt.show()
 
 def plot1():	
-	number_of_simulations = 5
-	number_of_iterations_per_simulation = 300
+	number_of_simulations = 1
+	number_of_iterations_per_simulation = 100
+	plot_matrix = np.zeros((number_of_simulations,number_of_iterations_per_simulation)) # number of different a's times numer of iterations
+
+	no_of_item = 3
+
+	for i in range(number_of_simulations):
+		buyer = buyers.Buyer(no_of_item=no_of_item)
+		print "valuation = ", buyer.get_valuation_vector()
+		plot_matrix[i] = algorithms.s_util_unconstrained(number_of_iterations_per_simulation, buyer, epsilon=0.01)	
+
+
+	np.savetxt("plotc1.csv", plot_matrix, delimiter=",")
+	
+	################################################
+
+	number_of_simulations = 1
+	number_of_iterations_per_simulation = 100
+	plot_matrix = np.zeros((number_of_simulations,number_of_iterations_per_simulation)) # number of different a's times numer of iterations
+
+	no_of_item = 4
+
+	for i in range(number_of_simulations):
+		buyer = buyers.Buyer(no_of_item=no_of_item)
+		print "valuation = ", buyer.get_valuation_vector()
+		plot_matrix[i] = algorithms.s_util_unconstrained(number_of_iterations_per_simulation, buyer, epsilon=0.01)	
+
+
+	np.savetxt("plotc2.csv", plot_matrix, delimiter=",")
+	
+	#####################################################
+
+	number_of_simulations = 1
+	number_of_iterations_per_simulation = 100
 	plot_matrix = np.zeros((number_of_simulations,number_of_iterations_per_simulation)) # number of different a's times numer of iterations
 
 	no_of_item = 5
@@ -117,41 +149,9 @@ def plot1():
 		plot_matrix[i] = algorithms.s_util_unconstrained(number_of_iterations_per_simulation, buyer, epsilon=0.01)	
 
 
-	np.savetxt("plotb1.csv", plot_matrix, delimiter=",")
-	
-	################################################
+	np.savetxt("plotc3.csv", plot_matrix, delimiter=",")
 
-	number_of_simulations = 5
-	number_of_iterations_per_simulation = 300
-	plot_matrix = np.zeros((number_of_simulations,number_of_iterations_per_simulation)) # number of different a's times numer of iterations
-
-	no_of_item = 7
-
-	for i in range(number_of_simulations):
-		buyer = buyers.Buyer(no_of_item=no_of_item)
-		print "valuation = ", buyer.get_valuation_vector()
-		plot_matrix[i] = algorithms.s_util_unconstrained(number_of_iterations_per_simulation, buyer, epsilon=0.01)	
-
-
-	np.savetxt("plotb2.csv", plot_matrix, delimiter=",")
-	
-	#####################################################
-
-	number_of_simulations = 5
-	number_of_iterations_per_simulation = 300
-	plot_matrix = np.zeros((number_of_simulations,number_of_iterations_per_simulation)) # number of different a's times numer of iterations
-
-	no_of_item = 10
-
-	for i in range(number_of_simulations):
-		buyer = buyers.Buyer(no_of_item=no_of_item)
-		print "valuation = ", buyer.get_valuation_vector()
-		plot_matrix[i] = algorithms.s_util_unconstrained(number_of_iterations_per_simulation, buyer, epsilon=0.01)	
-
-
-	np.savetxt("plotb3.csv", plot_matrix, delimiter=",")
-
-	plot_from_csv(r'$t$', r'$\ell_2(A_t, a^*)$', "plotb1.csv", "plotb2.csv", "plotb3.csv", "n=5", "n=7", "n=10")
+	plot_from_csv(r'$t$', r'$\lambda_{max}(A_t)$', "plotc1.csv", "plotc2.csv", "plotc3.csv", "n=5", "n=7", "n=10")
 	
 def plot_from_csv(x_axis_label, y_axis_label, subplot_fn_1, subplot_fn_2, subplot_fn_3, subplot_label_1, subplot_label_2, subplot_label_3):
 	
@@ -192,7 +192,7 @@ def plot_from_csv(x_axis_label, y_axis_label, subplot_fn_1, subplot_fn_2, subplo
 	ax.legend(loc='best', bbox_to_anchor=(0.5, 1.05), ncol=3)
 	plt.legend(loc='best')
 
-	plt.savefig('plot2b.png', bbox_inches='tight', pad_inches=0.2)
+	plt.savefig('plot1c.png', bbox_inches='tight', pad_inches=0.2)
 	plt.show()
 	
 if __name__ == '__main__':

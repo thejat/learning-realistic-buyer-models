@@ -4,6 +4,7 @@ import buyers, geometric
 import cvxpy as cvx
 from numpy import linalg as LA
 from scipy import linalg as LA2
+import csv
 
 np.random.seed(2018)
 
@@ -99,9 +100,9 @@ def s_util_unconstrained(number_of_iter, buyer, epsilon):
 		#w, v = LA.eig(ellip.get_shape_mat())
 		#print "c=",center, "  a*=", buyer.get_valuation_vector()
 		#print "shape A =", ellip.get_shape_mat()
-		error_at_iter[i] = LA.norm(buyer.get_valuation_vector() - center, 2)/LA.norm(buyer.get_valuation_vector(),2)
+		#error_at_iter[i] = LA.norm(buyer.get_valuation_vector() - center, 2)/LA.norm(buyer.get_valuation_vector(),2)
 		#error_at_iter[i] = LA.cond(ellip.get_shape_mat())
-		#error_at_iter[i] = w2[0]
+		error_at_iter[i] = w2[0]
 		print "volume = ", ellip.get_volume(), "maximum eigen value = ", w2[0], "error = ", error_at_iter[i], "  c=",center, "  a*=", buyer.get_valuation_vector(), "  member:", ellip.get_membership(buyer.get_valuation_vector())   
 		#print "eigen values = ", w
 		#print "eigen vectors = ", v 
@@ -111,7 +112,8 @@ def s_util_unconstrained(number_of_iter, buyer, epsilon):
 		# (real inner loop) 
 		our_estimate2 = learn_value(x, 0.001, buyer)
 		#our_estimate2 = np.dot(x,buyer.get_valuation_vector())
-		# (real )deficit = our_estimate - np.dot(buyer.get_valuation_vector(),x)
+		# (real )
+		deficit = our_estimate2 - np.dot(buyer.get_valuation_vector(),x)
 		print "our utility estimate = ", our_estimate2
 
 		if (our_estimate2 <= np.dot(x, center)):
@@ -119,11 +121,13 @@ def s_util_unconstrained(number_of_iter, buyer, epsilon):
 			halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='leq',rhs=None)
 		else:
 			#print "hyperplane : second kind (greater): ", " x=", x, " center =", center, " rhs=", np.dot(x,center) - float (4)/50 * np.sum(np.sqrt(x)) - 2.0 * 0.002
-			# (real) print "hyperplane : second kind (greater): ", " x=",x, " center=",center, " rhs=", np.dot(x,center)-deficit
-			print "hyperplane : second kind (greater): ", " x=",x, " center=",center, " rhs=", np.dot(x,center)
+			# (real) 
+			print "hyperplane : second kind (greater): ", " x=",x, " center=",center, " rhs=", np.dot(x,center)-deficit
+			#print "hyperplane : second kind (greater): ", " x=",x, " center=",center, " rhs=", np.dot(x,center)
 			#halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='geq',rhs=np.dot(x,center) - float (4)/50 * np.sum(np.sqrt(x)) - 2.0 * 0.002)
-			# (real) halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='geq',rhs=np.dot(x,center)-deficit)
-			halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='geq',rhs=np.dot(x,center))
+			# (real) 
+			halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='geq',rhs=np.dot(x,center)-deficit)
+			#halfspace = geometric.SpecialHalfspace(pvec=x,cvec=center,direction='geq',rhs=np.dot(x,center))
 		ellip = geometric.get_min_vol_ellipsoid2(ellip, halfspace)
 		A = ellip.get_shape_mat()
 		w2,v2 =  LA2.eigh(A, eigvals=(no_of_item-1,no_of_item-1))
@@ -303,12 +307,16 @@ def projection(price, dim):
 
 	# variable
 	price_prime = cvx.Variable(dim)
-
+	price_matrix = np.array(list(csv.reader(open("price_data1.csv", "rb"), delimiter=","))).astype("float")
+	
 	# objective
 	obj = cvx.Minimize(1/float(2)*cvx.norm(price - price_prime)**2)
 
-	# constraint 
-	constraints = [price_prime >= 0.4, price_prime<=0.585]
+	# constraint
+	constraints = []
+	for i in range(dim):
+		constraints += [price_prime[i] >= price_matrix[i,1]/(price_matrix[i,1] + price_matrix[i,2]), price_prime[i] <= price_matrix[i,1]/(price_matrix[i,1] + price_matrix[i,2])] 
+	#constraints = [price_prime >= 0.4, price_prime<=0.585]
 
 	# solve
 	prob = cvx.Problem(obj, constraints)
@@ -567,11 +575,14 @@ if __name__ == '__main__':
 	# p_ij_best1,p_bar_best1,ij_best1 = get_best_price_from_candidate_prices(no_of_item,budget,bit_length,Elist[1])
 
 	# debugging s_util_unconstrained
-	no_of_item = 2
+	no_of_item = 3
 	buyer = buyers.Buyer(no_of_item = no_of_item)
 	print "valuation = ", buyer.get_valuation_vector()
-	print "bundle = ", np.array([0,1])
-	print "our estimate = ", learn_value(np.array([0,1]), 0.001, buyer)
+	price_matrix = np.array(list(csv.reader(open("price_data1.csv", "rb"), delimiter=","))).astype("float")
+	print price_matrix[6789,1]/(price_matrix[6789,1] + price_matrix[6789,2]), "  ",price_matrix[6789,2]/(price_matrix[6789,1] + price_matrix[6789,2])
+	print len(price_matrix)
+	#print "bundle = ", np.array([0,1])
+	#print "our estimate = ", learn_value(np.array([0,1]), 0.001, buyer)
 
 	#x_hat = np.array([0.01144068, 0.28162135, 1.0, 0.07832548])
 	#learn_value(x_hat, 0.001, buyer)
