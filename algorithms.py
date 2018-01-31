@@ -219,7 +219,7 @@ def s_util_unconstrained2(buyer, epsilon):
 		#print "bundle chosen: ", x  
 		print "-------------------------------------------------------------------------------------------------------------------------"
 		print "inner loop running......."
-		# (real inner loop) our_estimate = learn_value(x, 0.001, buyer)
+		# (real inner loop) our_estimate2 = learn_value(x, 0.001, buyer)
 		our_estimate2 = np.dot(x,buyer.get_valuation_vector())
 		# (real )deficit = our_estimate - np.dot(buyer.get_valuation_vector(),x)
 		print "our utility estimate = ", our_estimate2
