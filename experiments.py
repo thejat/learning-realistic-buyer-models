@@ -151,7 +151,7 @@ def plot1():
 
 	np.savetxt("plota3.csv", plot_matrix, delimiter=",")
 
-	plot_from_csv(r'$n$', r'$\lambda_{max}$', "plota1.csv", "plota2.csv", "plota3.csv", "n=5", "n=7", "n=9")
+	plot_from_csv(r'$t$', r'$\lambda_{max}(A_t)$', "plota1.csv", "plota2.csv", "plota3.csv", "n=5", "n=7", "n=9")
 	
 def plot_from_csv(x_axis_label, y_axis_label, subplot_fn_1, subplot_fn_2, subplot_fn_3, subplot_label_1, subplot_label_2, subplot_label_3):
 	
