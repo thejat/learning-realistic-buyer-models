@@ -5,6 +5,21 @@ import buyers, algorithms, data, geometric
 #matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
+import csv
+
+import seaborn as sns
+plt.style.use('fivethirtyeight')
+plt.rcParams['font.family'] = 'serif'
+plt.rcParams['font.serif'] = 'Ubuntu'
+plt.rcParams['font.monospace'] = 'Ubuntu Mono'
+plt.rcParams['font.size'] = 30
+plt.rcParams['axes.labelsize'] = 30
+# plt.rcParams['axes.labelweight'] = 'bold'
+plt.rcParams['axes.titlesize'] = 30
+plt.rcParams['xtick.labelsize'] = 20
+plt.rcParams['ytick.labelsize'] = 20
+plt.rcParams['legend.fontsize'] = 30
+plt.rcParams['figure.titlesize'] = 30
 
 def illustrate_learning_preference_buyer(params):
 	# Local
@@ -90,11 +105,11 @@ def plot2():
 	plt.show()
 
 def plot1():	
-	number_of_simulations = 1
-	number_of_iterations_per_simulation = 1000 
+	number_of_simulations = 5
+	number_of_iterations_per_simulation = 100
 	plot_matrix = np.zeros((number_of_simulations,number_of_iterations_per_simulation)) # number of different a's times numer of iterations
 
-	no_of_item = 14
+	no_of_item = 5
 
 	for i in range(number_of_simulations):
 		buyer = buyers.Buyer(no_of_item=no_of_item)
@@ -102,19 +117,84 @@ def plot1():
 		plot_matrix[i] = algorithms.s_util_unconstrained(number_of_iterations_per_simulation, buyer, epsilon=0.01)	
 
 
-	np.savetxt("plot1.csv", plot_matrix, delimiter=",")
+	np.savetxt("plota1.csv", plot_matrix, delimiter=",")
+	
+	################################################
+
+	number_of_simulations = 5
+	number_of_iterations_per_simulation = 100
+	plot_matrix = np.zeros((number_of_simulations,number_of_iterations_per_simulation)) # number of different a's times numer of iterations
+
+	no_of_item = 7
+
+	for i in range(number_of_simulations):
+		buyer = buyers.Buyer(no_of_item=no_of_item)
+		print "valuation = ", buyer.get_valuation_vector()
+		plot_matrix[i] = algorithms.s_util_unconstrained(number_of_iterations_per_simulation, buyer, epsilon=0.01)	
+
+
+	np.savetxt("plota2.csv", plot_matrix, delimiter=",")
+	
+	#####################################################
+
+	number_of_simulations = 5
+	number_of_iterations_per_simulation = 100
+	plot_matrix = np.zeros((number_of_simulations,number_of_iterations_per_simulation)) # number of different a's times numer of iterations
+
+	no_of_item = 9
+
+	for i in range(number_of_simulations):
+		buyer = buyers.Buyer(no_of_item=no_of_item)
+		print "valuation = ", buyer.get_valuation_vector()
+		plot_matrix[i] = algorithms.s_util_unconstrained(number_of_iterations_per_simulation, buyer, epsilon=0.01)	
+
+
+	np.savetxt("plota3.csv", plot_matrix, delimiter=",")
+
+	plot_from_csv("iterations", "max eig val", "plota1.csv", "plota2.csv", "plota3.csv", "n=5", "n=7", "n=9")
+	
+def plot_from_csv(x_axis_label, y_axis_label, subplot_fn_1, subplot_fn_2, subplot_fn_3, subplot_label_1, subplot_label_2, subplot_label_3):
+	
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
+	
+	plt.ylabel(y_axis_label)
+	plt.xlabel(x_axis_label)
+
+
+	plot_matrix = np.array(list(csv.reader(open(subplot_fn_1, "rb"), delimiter=","))).astype("float")
 	xs = np.arange(len(plot_matrix[0]))
-	print xs
 	ys_lb = np.asarray(   [np.percentile(plot_matrix[:,i],25)  for i in range(len(xs)) ]   )
 	ys_ub = np.asarray(   [np.percentile(plot_matrix[:,i],75)  for i in range(len(xs)) ]   )
 	ax.fill_between(xs, ys_lb, ys_ub, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
-
 	ys = np.asarray(  [np.mean(plot_matrix[:,i]) for i in range(len(xs))]    )
-	ax.plot(xs,ys)
-	plt.show()
+	ax.plot(xs,ys,label=subplot_label_1)
+	ax.legend(loc='best', bbox_to_anchor=(0.5, 1.05), ncol=3)
+	plt.legend(loc='best')
 
+	plot_matrix = np.array(list(csv.reader(open(subplot_fn_2, "rb"), delimiter=","))).astype("float")
+	xs = np.arange(len(plot_matrix[0]))
+	ys_lb = np.asarray(   [np.percentile(plot_matrix[:,i],25)  for i in range(len(xs)) ]   )
+	ys_ub = np.asarray(   [np.percentile(plot_matrix[:,i],75)  for i in range(len(xs)) ]   )
+	ax.fill_between(xs, ys_lb, ys_ub, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
+	ys = np.asarray(  [np.mean(plot_matrix[:,i]) for i in range(len(xs))]    )
+	ax.plot(xs,ys,label=subplot_label_2)
+	ax.legend(loc='best', bbox_to_anchor=(0.5, 1.05), ncol=3)
+	plt.legend(loc='best')
+
+	plot_matrix = np.array(list(csv.reader(open(subplot_fn_3, "rb"), delimiter=","))).astype("float")
+	xs = np.arange(len(plot_matrix[0]))
+	ys_lb = np.asarray(   [np.percentile(plot_matrix[:,i],25)  for i in range(len(xs)) ]   )
+	ys_ub = np.asarray(   [np.percentile(plot_matrix[:,i],75)  for i in range(len(xs)) ]   )
+	ax.fill_between(xs, ys_lb, ys_ub, alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
+	ys = np.asarray(  [np.mean(plot_matrix[:,i]) for i in range(len(xs))]    )
+	ax.plot(xs,ys,label=subplot_label_3)
+	ax.legend(loc='best', bbox_to_anchor=(0.5, 1.05), ncol=3)
+	plt.legend(loc='best')
+
+	plt.savefig('plota.png', bbox_inches='tight', pad_inches=0.2)
+	plt.show()
+	
 if __name__ == '__main__':
 	np.random.seed(2018)
 	params = {}
@@ -137,6 +217,7 @@ if __name__ == '__main__':
 	# # Sec 7 (unrealistic and realistic)
 	# illustrate_learning_stock_sensitive_buyer(params)
 	plot1()
+	#plot1(7)
 	#plot2()
 
 

@@ -99,7 +99,9 @@ def s_util_unconstrained(number_of_iter, buyer, epsilon):
 		#w, v = LA.eig(ellip.get_shape_mat())
 		#print "c=",center, "  a*=", buyer.get_valuation_vector()
 		#print "shape A =", ellip.get_shape_mat()
-		error_at_iter[i] = LA.norm(buyer.get_valuation_vector() - center, 2)/LA.norm(buyer.get_valuation_vector(),2)
+		#error_at_iter[i] = LA.norm(buyer.get_valuation_vector() - center, 2)/LA.norm(buyer.get_valuation_vector(),2)
+		#error_at_iter[i] = LA.cond(ellip.get_shape_mat())
+		error_at_iter[i] = w2[0]
 		print "volume = ", ellip.get_volume(), "maximum eigen value = ", w2[0], "error = ", error_at_iter[i], "  c=",center, "  a*=", buyer.get_valuation_vector(), "  member:", ellip.get_membership(buyer.get_valuation_vector())   
 		#print "eigen values = ", w
 		#print "eigen vectors = ", v 
