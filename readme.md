@@ -1,6 +1,6 @@
-### Code for the paper "Learning Buyer Behavior through Pricing"
+### Code for the paper "An Online Algorithm for Learning Buyer Behavior under Realistic Pricing Restrictions"
 
-This codebase is for algorithms proposed in the aforementioned [paper](http://arxiv.org/#). It consists of four python scripts:
+This codebase is for algorithms proposed in the aforementioned [paper](https://arxiv.org/abs/1803.01968). It consists of four python scripts:
 
   * algorithms.py : has the proposed and competitor algorithms
   * data.py : generates data (e.g., from the billion prices project)
